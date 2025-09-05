@@ -6,10 +6,10 @@ services:
     container_name: dairy_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: dairy_db
-      MYSQL_USER: dairy_user
-      MYSQL_PASSWORD: dairy_pass
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: collection_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     ports:
       - "3306:3306"
     volumes:
