@@ -87,6 +87,7 @@ class CircuitService {
 
     async updateCircuit (id_circuit, data){
         const circuit = await CircuitRepository.findById(id_circuit);
+
         if (!circuit) {
             throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
         }

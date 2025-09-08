@@ -11,11 +11,17 @@ class CircuitController{
      * @access  Private (à définir plus tard)
      */
     createCircuit = catchAsync(async (req, res, next) => {
-        const nouveauCircuit = await circuitService.createCircuit(req.body);
+        console.log("body request ",req.body)
+        const { nom, description } = req.body;
+
+        const newCercuit = { nom, description };
+
+        const nouveauCircuit = await circuitService.createCircuit(newCercuit);
         res.status(201).json({
             status: 'success',
             data: {
                 circuit: nouveauCircuit
+
             }
         });
     });
@@ -43,7 +49,7 @@ class CircuitController{
      */
     getCircuitById = catchAsync(async (req, res, next) => {
         // req.params.id contient l'ID passé dans l'URL
-        const circuit = await circuitService.getCircuitById(req.params.id);
+        const circuit = await circuitService.getCircuitById(req.params.circuitId);
         res.status(200).json({
             status: 'success',
             data: {
@@ -143,6 +149,7 @@ class CircuitController{
 
     updateCircuit = catchAsync(async (req,res,next)=> {
         const {circuitId} = req.params;
+
         const { nom, description } = req.body;
         const updateData = { nom, description };
 

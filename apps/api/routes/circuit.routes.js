@@ -18,7 +18,7 @@ router.route('/:circuitId/users')
 // PATCH /api/circuits/:circuitId/users/:userId -> Remplacer un utilisateur sur un circuit
 router.route('/:circuitId/users/:userId')
     .delete(circuitController.removeUserFromCircuit)
-    .patch(circuitController.updateUserInCircuit); // Utiliser PATCH est sémantiquement bon pour une mise à jour partielle/remplacement
+    .put(circuitController.updateUserInCircuit); // Utiliser PATCH est sémantiquement bon pour une mise à jour partielle/remplacement
 
 // --- Routes pour les Circuits eux-mêmes ---
 
@@ -31,9 +31,9 @@ router.route('/')
 // GET /api/circuits/:id -> Récupérer un circuit par son ID
 // PATCH /api/circuits/:id -> Mettre à jour un circuit
 // DELETE /api/circuits/:id -> Supprimer un circuit
-router.route('/:id')
+router.route('/:circuitId')
     .get(circuitController.getCircuitById)
-    .patch(circuitController.updateCircuit)
+    .put(circuitController.updateCircuit)
     .delete(circuitController.deleteCircuit);
 
 module.exports = router;

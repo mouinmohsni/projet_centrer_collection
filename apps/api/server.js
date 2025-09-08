@@ -1,35 +1,58 @@
-
+// =================================================================
+// BLOC 1 : IMPORTS ET CONFIGURATION
+// =================================================================
 require('dotenv').config();
-const express = require('express')
-const bodyParser =require('body-parser')
-const cors = require('cors')
-const NotFoundError = require('./util/NotFoundError')
-const BusinessLogicError = require('./util/BusinessLogicError')
+const express = require('express');
+const cors = require('cors');
 
-const app = express()
-app.use(cors())
-app.use(bodyParser.json())
+// Import des routes
+const circuitRoutes = require('./routes/circuit.routes');
 
- const port = process.env.PORT || 3000
+// Import des gestionnaires d'erreur
+const NotFoundError = require('./util/NotFoundError');
 
-// Ce middleware s'exécute si aucune des routes ci-dessus n'a correspondu.
+
+// =================================================================
+// BLOC 2 : CRÉATION ET CONFIGURATION DE L'APP EXPRESS
+// =================================================================
+const app = express();
+
+// --- Middlewares Globaux ---
+// Doit être placé AVANT les routes pour que les requêtes soient préparées.
+
+// 1. Activer CORS pour toutes les requêtes
+app.use(cors());
+
+// 2. Parser le corps des requêtes JSON. C'est la ligne qui remplit req.body.
+app.use(express.json(), express.urlencoded({ extended: true }));
+
+
+// =================================================================
+// BLOC 3 : ROUTES
+// =================================================================
+
+// Route de test simple
+app.get('/api/test', (req, res) => {
+    res.send('Hello! Server is running!');
+});
+
+// Montage des routes pour les circuits
+app.use('/api/circuits', circuitRoutes);
+
+
+// =================================================================
+// BLOC 4 : GESTION DES ERREURS
+// =================================================================
+
+// 1. Gestion des routes non trouvées (404)
+// Doit être APRÈS toutes les routes valides.
 app.all(/.*/, (req, res, next) => {
-    // On crée une erreur et on la passe au gestionnaire d'erreurs global
     next(new NotFoundError(`Impossible de trouver ${req.originalUrl} sur ce serveur.`));
 });
 
-
-app.get('/api/test', (req, res) => {
-    res.send('Hello! Server is running on port 3000')
-})
-const circuitRoutes = require('./routes/circuit.routes'); // 1. Importer les routes
-
-app.use('/api/circuits', circuitRoutes); // 2. Dire à Express de les utiliser
-
-// MIDDLEWARE DE GESTION D'ERREURS GLOBAL
-// C'est le dernier middleware. Express sait qu'il gère les erreurs car il a 4 arguments.
-// MIDDLEWARE DE GESTION D'ERREURS GLOBAL
-app.use((err, req, res, next) => { // Le paramètre 'next' est requis par Express, même si inutilisé.
+// 2. Gestionnaire d'erreurs global
+// Doit être le TOUT DERNIER middleware.
+app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Une erreur interne du serveur est survenue.';
 
@@ -37,12 +60,16 @@ app.use((err, req, res, next) => { // Le paramètre 'next' est requis par Expres
 
     res.status(statusCode).json({
         status: 'error',
-        message: message, // Utilisation explicite pour éviter les problèmes de linter
+        message: message,
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 });
 
 
-app.listen(port ,()=>{
-    console.log(`server running on port ${port}`)
-})
+// =================================================================
+// BLOC 5 : DÉMARRAGE DU SERVEUR
+// =================================================================
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Serveur démarré sur le port ${port}`);
+});
