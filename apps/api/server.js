@@ -22,7 +22,9 @@ app.all(/.*/, (req, res, next) => {
 app.get('/api/test', (req, res) => {
     res.send('Hello! Server is running on port 3000')
 })
+const circuitRoutes = require('./routes/circuit.routes'); // 1. Importer les routes
 
+app.use('/api/circuits', circuitRoutes); // 2. Dire à Express de les utiliser
 
 // MIDDLEWARE DE GESTION D'ERREURS GLOBAL
 // C'est le dernier middleware. Express sait qu'il gère les erreurs car il a 4 arguments.
