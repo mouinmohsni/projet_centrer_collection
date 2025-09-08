@@ -82,6 +82,33 @@ class CircuitUserRepository {
         // On retourne des instances du modèle Circuit
         return rows.map(row => new Circuit(row));
     }
+
+    /**
+     * Remplace une association utilisateur sur un circuit par une nouvelle.
+     * @param {number} id_circuit - L'ID du circuit concerné.
+     * @param {number} old_id_user - L'ID de l'utilisateur à remplacer.
+     * @param {number} new_id_user - L'ID du nouvel utilisateur.
+     * @returns {Promise<boolean>} True si le remplacement a réussi.
+     */
+    async replaceUserInCircuit(id_circuit, old_id_user, new_id_user) {
+
+        await this.delete(id_circuit, old_id_user);
+
+
+        return this.create(id_circuit, new_id_user);;
+
+    }
+
+    /**
+     * supprimer tout les association d'un circuit
+     * @param {number} id_circuit
+     * @returns {Promise<boolean>}
+     */
+    async deleteAllAssociationsByCircuit(id_circuit) {
+        const [result] = await db.query(`DELETE FROM circuit_user WHERE id_circuit = ?`, [id_circuit]);
+        return result.affectedRows > 0;
+    }
+
 }
 
 // On exporte une instance unique (Singleton)

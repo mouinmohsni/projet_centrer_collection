@@ -1,5 +1,5 @@
 const db = require('../models/db');
-const Circuit = require('../models/circuit');
+const Circuit = require('../models/Circuit');
 
 
 
