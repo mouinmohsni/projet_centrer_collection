@@ -11,7 +11,6 @@ class CircuitController{
      * @access  Private (à définir plus tard)
      */
     createCircuit = catchAsync(async (req, res, next) => {
-        console.log("body request ",req.body)
         const { nom, description } = req.body;
 
         const newCercuit = { nom, description };
@@ -78,6 +77,8 @@ class CircuitController{
             data: result
         });
     });
+
+
 
     /**
      *@desc    supprimer un utilisateur à un circuit
@@ -146,7 +147,6 @@ class CircuitController{
      * @route   PUT /api/circuits/:circuitId
      * @access  Private
      */
-
     updateCircuit = catchAsync(async (req,res,next)=> {
         const {circuitId} = req.params;
 
@@ -175,8 +175,9 @@ class CircuitController{
             data: result
         });
 
-
     });
+
+
 
 
     }

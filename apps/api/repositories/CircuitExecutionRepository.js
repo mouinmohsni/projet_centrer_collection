@@ -19,11 +19,11 @@ class CircuitExecutionRepository {
      * @returns {Promise<number>} L'ID de la nouvelle exécution.
      */
     async create(data) {
-        const { id_circuit, id_date, id_vehicule, km_parcouru } = data;
+        const { id_circuit, id_date, id_Voiture, km_parcouru } = data;
         const [result] = await db.query(
-            `INSERT INTO circuit_execution (id_circuit, id_date, id_vehicule, km_parcouru)
+            `INSERT INTO circuit_execution (id_circuit, id_date, id_Voiture, km_parcouru)
              VALUES (?, ?, ?, ?)`,
-            [id_circuit, id_date, id_vehicule, km_parcouru]
+            [id_circuit, id_date, id_Voiture, km_parcouru]
         );
         return result.insertId;
     }
@@ -70,12 +70,12 @@ class CircuitExecutionRepository {
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
     async update(id_execution, data) {
-        const { id_circuit, id_date, id_vehicule, km_parcouru } = data;
+        const { id_circuit, id_date, id_Voiture, km_parcouru } = data;
         const [result] = await db.query(
             `UPDATE circuit_execution
-             SET id_circuit = ?, id_date = ?, id_vehicule = ?, km_parcouru = ?
+             SET id_circuit = ?, id_date = ?, id_Voiture = ?, km_parcouru = ?
              WHERE id_execution = ?`,
-            [id_circuit, id_date, id_vehicule, km_parcouru, id_execution]
+            [id_circuit, id_date, id_Voiture, km_parcouru, id_execution]
         );
         return result.affectedRows > 0;
     }
@@ -102,7 +102,7 @@ class CircuitExecutionRepository {
         const [rows] = await db.query(
             `SELECT ce.*, v.immatriculation, c.nom AS nom_circuit
              FROM circuit_execution ce
-             JOIN vehicule v ON ce.id_vehicule = v.id_vehicule
+             JOIN voiture v ON ce.id_Voiture = v.id_Voiture
              JOIN circuit c ON ce.id_circuit = c.id_circuit
              WHERE ce.id_execution = ?`,
             [id_execution]

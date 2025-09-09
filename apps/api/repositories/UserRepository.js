@@ -1,5 +1,7 @@
 const db = require('../models/db');
 const User = require('../models/User');
+const Voiture = require('../models/Voiture')
+
 
 
 class UserRepository {
@@ -95,6 +97,20 @@ class UserRepository {
     async delete(id_user) {
         const [result] = await db.query(`DELETE FROM user WHERE id_user = ?`, [id_user]);
         return result.affectedRows > 0;
+    }
+    /**
+     * Récupère tous les véhicules conduits par un utilisateur spécifique.
+     * @param {number} id_user - L'ID de l'utilisateur (conducteur).
+     * @returns {Promise<Voiture[]>} Un tableau des véhicules conduits par l'utilisateur.
+     */
+    async findVehiclesByUserId(id_user) {
+        const [rows] = await db.query(
+            `SELECT * FROM voiture WHERE id_conducteur = ?`,
+            [id_user]
+        );
+
+        // On mappe chaque ligne de résultat en une instance de la classe Voiture
+        return rows.map(row => new Voiture(row));
     }
 }
 

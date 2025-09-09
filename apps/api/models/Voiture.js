@@ -1,10 +1,10 @@
 const db = require('./db');
 
-class Vehicule {
+class Voiture {
 
     /**
      * @param {object}  data
-     * @param {number}  data.id_vehicule
+     * @param {number}  data.id_Voiture
      * @param {number}  data.immatriculation
      * @param {number}  data.capacite
      * @param {boolean} data.refrigerateur
@@ -14,8 +14,8 @@ class Vehicule {
      * @param {number}  data.id_conducteur
      */
 
-    constructor({ id_vehicule, immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat, id_conducteur }) {
-        this.id_vehicule = id_vehicule;
+    constructor({ id_Voiture, immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat, id_conducteur }) {
+        this.id_Voiture = id_Voiture;
         this.immatriculation = immatriculation;
         this.capacite = capacite;
         this.refrigerateur = refrigerateur;
@@ -30,4 +30,4 @@ class Vehicule {
         return this.km_prochain_vidange !== null && this.km_total >= this.km_prochain_vidange;
     }
 }
-module.exports = Vehicule;
+module.exports = Voiture;

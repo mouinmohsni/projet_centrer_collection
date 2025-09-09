@@ -21,8 +21,8 @@ class CarburantRepository {
      */
     async create(data) {
         const [result] = await db.query(
-            `INSERT INTO carburant (id_vehicule, id_date, quantite, cout) VALUES (?, ?, ?, ?)`,
-            [data.id_vehicule, data.id_date, data.quantite, data.cout]
+            `INSERT INTO carburant (id_Voiture, id_date, quantite, cout) VALUES (?, ?, ?, ?)`,
+            [data.id_Voiture, data.id_date, data.quantite, data.cout]
         );
         return result.insertId;
     }
@@ -48,11 +48,11 @@ class CarburantRepository {
 
     /**
      * 📅 donner tout le carburant d'une voiture.
-     * @param {number} id_vehicule
+     * @param {number} id_Voiture
      * @returns {Promise<Carburant[]>}
      */
-    async getByVehicule(id_vehicule) {
-        const [rows] = await db.query(`SELECT * FROM carburant WHERE id_vehicule = ?`, [id_vehicule]);
+    async getByVoiture(id_Voiture) {
+        const [rows] = await db.query(`SELECT * FROM carburant WHERE id_Voiture = ?`, [id_Voiture]);
         return rows.map(this.mapRowToModel);
     }
 
@@ -64,8 +64,8 @@ class CarburantRepository {
      */
     async update(id_carburant, data) {
         const [result] = await db.query(
-            `UPDATE carburant SET id_vehicule = ?, id_date = ?, quantite = ?, cout = ? WHERE id_carburant = ?`,
-            [data.id_vehicule, data.id_date, data.quantite, data.cout, id_carburant]
+            `UPDATE carburant SET id_Voiture = ?, id_date = ?, quantite = ?, cout = ? WHERE id_carburant = ?`,
+            [data.id_Voiture, data.id_date, data.quantite, data.cout, id_carburant]
         );
         return result.affectedRows > 0;
     }
@@ -82,21 +82,21 @@ class CarburantRepository {
 
     /**
      * total carburan d'une voiture.
-     * @param {number} id_vehicule
+     * @param {number} id_Voiture
      * @returns {Promise<number>} consommation d'une voiture.
      */
-    async getTotalQuantiteByVehicule(id_vehicule) {
-        const [rows] = await db.query(`SELECT SUM(quantite) AS total_quantite FROM carburant WHERE id_vehicule = ?`, [id_vehicule]);
+    async getTotalQuantiteByVoiture(id_Voiture) {
+        const [rows] = await db.query(`SELECT SUM(quantite) AS total_quantite FROM carburant WHERE id_Voiture = ?`, [id_Voiture]);
         return rows[0]?.total_quantite || 0;
     }
 
     /**
      * cout total du carburan d'une voiture.
-     * @param {number} id_vehicule
+     * @param {number} id_Voiture
      * @returns {Promise<number>}  cout de consommation d'une voiture.
      */
-    async getTotalCoutByVehicule(id_vehicule) {
-        const [rows] = await db.query(`SELECT SUM(cout) AS total_cout FROM carburant WHERE id_vehicule = ?`, [id_vehicule]);
+    async getTotalCoutByVoiture(id_Voiture) {
+        const [rows] = await db.query(`SELECT SUM(cout) AS total_cout FROM carburant WHERE id_Voiture = ?`, [id_Voiture]);
         return rows[0]?.total_cout || 0;
     }
 }
