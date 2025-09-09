@@ -8,6 +8,7 @@ const cors = require('cors');
 // Import des routes
 const circuitRoutes = require('./routes/circuit.routes')
 const voitureRoutes = require('./routes/voiture.routes');
+const roleRoutes = require('./routes/role.routes');
 
 // Import des gestionnaires d'erreur
 const NotFoundError = require('./util/NotFoundError');
@@ -40,6 +41,7 @@ app.get('/api/test', (req, res) => {
 // Montage des routes pour les circuits
 app.use('/api/circuits', circuitRoutes);
 app.use('/api/voitures',voitureRoutes);
+app.use('/api/roles',roleRoutes)
 
 
 // =================================================================

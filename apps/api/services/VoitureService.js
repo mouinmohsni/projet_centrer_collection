@@ -150,9 +150,5 @@ class VoitureService{
         // 3. Retourner la voiture mise à jour
         return VoitureRepository.findById(id_voiture);
     }
-
-
-
-
 }
 module.exports = new VoitureService();

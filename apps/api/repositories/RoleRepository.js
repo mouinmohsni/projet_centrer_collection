@@ -16,13 +16,13 @@ class RoleRepository {
 
     /**
      * ➕ Crée un nouveau rôle.
-     * @param {string} libelle - Le libellé du nouveau rôle.
+     * @param {object} data - Le libellé du nouveau rôle.
      * @returns {Promise<number>} L'ID du nouveau rôle.
      */
-    async create(libelle) {
+    async create(data) {
         const [result] = await db.execute(
             `INSERT INTO role (libelle) VALUES (?)`,
-            [libelle]
+            [data.libelle]
         );
         return result.insertId;
     }
@@ -52,13 +52,13 @@ class RoleRepository {
     /**
      * 🔄 Met à jour un rôle.
      * @param {number} id_role
-     * @param {string} libelle
+     * @param {object} data
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    async update(id_role, libelle) {
+    async update(id_role, data) {
         const [result] = await db.execute(
             `UPDATE role SET libelle = ? WHERE id_role = ?`,
-            [libelle, id_role]
+            [data.libelle, id_role]
         );
         return result.affectedRows > 0;
     }
