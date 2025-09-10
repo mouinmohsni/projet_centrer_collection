@@ -1,0 +1,90 @@
+const catchAsync = require('../util/catchAsync')
+const RecolteService =require('../services/RecolteService')
+const Recolte = require('../models/Recolte')
+
+
+class RecolteController{
+
+    /**
+     * @desc    Créer une nouvelle Recolte
+     * @route   POST /api/Recoltes
+     * @access  Private (à définir plus tard)
+     */
+    createRecolte = catchAsync(async (req, res, next) => {
+        const newRecolte = await RecolteService.create(req.body);
+        res.status(201).json({
+            status: 'success',
+            data: {
+                Recolte: newRecolte
+
+            }
+        });
+    });
+
+    // /**
+    //  * @desc    Récupérer tous les Recoltes
+    //  * @route   GET /api/Recoltes
+    //  * @access  Public
+    //  */
+    // getAllRecoltes = catchAsync(async (req, res, next) => {
+    //     const Recoltes = await RecolteService.getAll();
+    //     res.status(200).json({
+    //         status: 'success',
+    //         results: Recoltes.length,
+    //         data: {
+    //             Recoltes: Recoltes
+    //         }
+    //     });
+    // });
+
+    /**
+     * @desc    Récupérer une Recolte par son ID
+     * @route   GET /api/Recoltes/:id
+     * @access  Private
+     */
+    getRecolteById = catchAsync(async (req, res, next) => {
+        const Recolte = await RecolteService.getoneById(req.params.recolteId);
+        res.status(200).json({
+            status: 'success',
+            data: {
+                Recolte: Recolte
+            }
+        });
+    });
+
+    /**
+     * @desc    modifier un d'un Recolte
+     * @route   PUT /api/Recoltes/:recolteId
+     * @access  Private
+     */
+    updateRecolte = catchAsync(async (req,res,next)=> {
+        const {recolteId} = req.params;
+
+
+
+        const result = await RecolteService.update(recolteId,req.body);
+        res.status(200).json({
+            status: 'success',
+            data: result
+        });
+
+    });
+
+    /**
+     * @desc    supprimer un Recolte
+     * @route   DELETE  /api/Recoltes/:recolteId
+     * @access  Private
+     */
+    deleteRecolte = catchAsync(async (req,res,next)=> {
+        const {recolteId} = req.params;
+        const result = await RecolteService.delete(recolteId);
+        res.status(200).json({
+            status: 'success',
+            data: result
+        });
+
+    });
+
+}
+
+module.exports = new RecolteController();

@@ -1,5 +1,6 @@
 const userRepository = require('../repositories/UserRepository');
 const NotFoundError = require('../util/NotFoundError');
+const recolteRepository = require('../repositories/RecolteRepository')
 
 class UserService {
 
@@ -21,6 +22,62 @@ class UserService {
         const voitures = await userRepository.findVehiclesByUserId(id_user);
 
         return voitures;
+    }
+
+
+    /**
+     * Récupère l'historique des récoltes collectées par un conducteur,
+     * avec un filtre optionnel par période.
+     * @param {number} id_conducteur - L'ID du conducteur.
+     * @param {object} [filtres={}] - Un objet contenant les filtres optionnels.
+     * @param {string} [filtres.dateDebut] - La date de début (format 'YYYY-MM-DD').
+     * @param {string} [filtres.dateFin] - La date de fin (format 'YYYY-MM-DD').
+     * @returns {Promise<Recolte[]>}
+     */
+    async getRecoltesByConducteur(id_conducteur, filtres = {}) {
+        // 1. Logique métier du service : valider l'existence du conducteur.
+        const user = await userRepository.findById(id_conducteur);
+        if (!user) {
+            throw new NotFoundError(`Le conducteur avec l'ID ${id_conducteur} n'a pas été trouvé.`);
+        }
+        // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "conducteur".
+
+        // 2. Extraire les filtres de l'objet.
+        const { dateDebut, dateFin } = filtres;
+
+        // 3. Appeler la méthode unique du repository en lui passant les paramètres.
+        // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
+        const recoltes = await recolteRepository.getByConducteur(id_conducteur, dateDebut, dateFin);
+
+        return recoltes;
+    }
+
+
+    /**
+     * Récupère l'historique des récoltes collectées par un producteur,
+     * avec un filtre optionnel par période.
+     * @param {number} id_producteur - L'ID du conducteur.
+     * @param {object} [filtres={}] - Un objet contenant les filtres optionnels.
+     * @param {string} [filtres.dateDebut] - La date de début (format 'YYYY-MM-DD').
+     * @param {string} [filtres.dateFin] - La date de fin (format 'YYYY-MM-DD').
+     * @returns {Promise<Recolte[]>}
+     */
+    async getRecoltesByProducteur(id_producteur, filtres = {}) {
+        // 1. Logique métier du service : valider l'existence du producteur.
+        const user = await userRepository.findById(id_producteur);
+        if (!user) {
+            throw new NotFoundError(`Le conducteur avec l'ID ${id_producteur} n'a pas été trouvé.`);
+        }
+        // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "producteur".
+
+        // 2. Extraire les filtres de l'objet.
+        const { dateDebut, dateFin } = filtres;
+
+        // 3. Appeler la méthode unique du repository en lui passant les paramètres.
+        // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
+        const recoltes = await recolteRepository.getByProducteur(id_producteur, dateDebut, dateFin);
+
+        return recoltes;
     }
 }
 
