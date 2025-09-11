@@ -11,9 +11,11 @@ const voitureRoutes = require('./routes/voiture.routes');
 const roleRoutes = require('./routes/role.routes');
 const recolteRoute = require('./routes/Recolte.routes');
 const produitRoute =require('./routes/produit.routes');
+const livraisonRoute = require('./routes/livraison.routes');
 
 // Import des gestionnaires d'erreur
 const NotFoundError = require('./util/NotFoundError');
+
 
 
 // =================================================================
@@ -46,6 +48,9 @@ app.use('/api/voitures',voitureRoutes);
 app.use('/api/roles',roleRoutes);
 app.use('/api/recoltes',recolteRoute);
 app.use('/api/produits',produitRoute);
+app.use('/api/livraisons',livraisonRoute);
+
+
 
 
 // =================================================================

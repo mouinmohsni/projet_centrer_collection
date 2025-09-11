@@ -85,7 +85,7 @@ class UserController{
 
     /**
      * @desc    recupere la recolte d'un conducteur
-     * @route   DELETE  /api/users/:userId/recoltes-conducteur
+     * @route   GET  /api/users/:userId/recoltes-conducteur
      * @access  Private
      */
     getRecoltesByConducteur = catchAsync(async (req, res, next) => {
@@ -144,6 +144,52 @@ class UserController{
             results: voiture.length,
             data: {
                 voiture
+            }
+        });
+    });
+
+    /**
+     * @desc    recupere la livraison d'un conducteur
+     * @route   GET  /api/users/:userId/livraison-conducteur
+     * @access  Private
+     */
+    getLivraisonByConducteur = catchAsync(async (req, res, next) => {
+        const { userId } = req.params;
+
+        // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
+        const { dateDebut, dateFin } = req.query;
+
+        // On passe l'ID et un objet de filtres au service.
+        const livraison = await UserService.getLivraisonByConducteur(userId, { dateDebut, dateFin });
+
+        res.status(200).json({
+            status: 'success',
+            results: livraison.length,
+            data: {
+                livraison
+            }
+        });
+    });
+
+    /**
+     * @desc    recupere les livraisons par clien
+     * @route   GET  /api/users/:roleId/livraison-producteur
+     * @access  Private
+     */
+    getLivraisonByClient = catchAsync(async (req, res, next) => {
+        const { userId } = req.params;
+
+        // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
+        const { dateDebut, dateFin } = req.query;
+
+        // On passe l'ID et un objet de filtres au service.
+        const livraisons = await UserService.getLivraisonsByClient(userId, { dateDebut, dateFin });
+
+        res.status(200).json({
+            status: 'success',
+            results: livraisons.length,
+            data: {
+                livraisons
             }
         });
     });

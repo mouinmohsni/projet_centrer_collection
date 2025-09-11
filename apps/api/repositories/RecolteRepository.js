@@ -41,18 +41,52 @@ class RecolteRepository {
         return this.mapRowToModel(rows[0]);
     }
 
+    /**
+     * 🔍 Récupère une livraison par son ID avec detail.
+     * @param {number} id_recolte
+     * @returns {Promise<object>}
+     */
+    async findByIdDetail(id_recolte) {
+        const [rows] = await db.execute(
+            `SELECT
+                 r.id_recolte, r.quantite,
+                 producteur.id_user AS clientId, producteur.nom AS producteurNom,
+                 conducteur.id_user AS livreurId, conducteur.nom AS livreurNom,
+                 p.id_produit AS produitId, p.nom AS produitNom,
+                 d.jour AS dateLivraison , d.periode AS perride
+             FROM
+                 recolte AS r
+                     LEFT JOIN user AS producteur ON r.id_producteur = producteur.id_user
+                     LEFT JOIN user AS conducteur ON r.id_conducteur = conducteur.id_user
+                     LEFT JOIN produit AS p ON r.id_produit = p.id_produit
+                     LEFT JOIN dim_date AS d ON r.id_date = d.id_date
+             WHERE  id_recolte = ?`,
+            [id_recolte]
+        );
+        return rows[0];
+    }
+
 
     /**
      * Récupère les récoltes d'un conducteur, avec un filtre optionnel par période de dates.
      * @param {number} id_producteur - L'ID du conducteur.
      * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
      * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
-     * @returns {Promise<Recolte[]>} Un tableau des récoltes correspondantes.
+     * @returns {Promise<object[]>} Un tableau des récoltes correspondantes.
      */
     async getByProducteur(id_producteur, dateDebut, dateFin) {
         // 1. On commence avec la requête de base et les paramètres de base.
         let sql = `
-            SELECT r.* 
+            SELECT  r.id_recolte,
+                    r.id_producteur,
+                    r.id_conducteur,
+                    r.id_produit,
+                    r.quantite,
+                    d.id_date,
+                    d.jour,
+                    d.mois,
+                    d.annee,
+                    d.jour_semaine
             FROM recolte AS r
             JOIN dim_date AS d ON r.id_date = d.id_date
             WHERE r.id_producteur = ?
@@ -61,22 +95,22 @@ class RecolteRepository {
 
         // 2. On ajoute dynamiquement les conditions de date si elles sont fournies.
         if (dateDebut) {
-            sql += ` AND d.jour_complet >= ?`; // On filtre sur la date complète
+            sql += ` AND d.jour >= ?`; // On filtre sur la date complète
             params.push(dateDebut);
         }
 
         if (dateFin) {
-            sql += ` AND d.jour_complet <= ?`;
+            sql += ` AND d.jour <= ?`;
             params.push(dateFin);
         }
 
         // 3. On ajoute le tri à la fin.
-        sql += ` ORDER BY d.jour_complet DESC, r.periode DESC`;
+        sql += ` ORDER BY d.jour DESC`;
 
         // 4. On exécute la requête construite dynamiquement.
         const [rows] = await db.execute(sql, params);
 
-        return rows.map(this.mapRowToModel);
+        return rows;
     }
 
 
@@ -85,12 +119,21 @@ class RecolteRepository {
      * @param {number} id_conducteur - L'ID du conducteur.
      * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
      * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
-     * @returns {Promise<Recolte[]>} Un tableau des récoltes correspondantes.
+     * @returns {Promise<object[]>} Un tableau des récoltes correspondantes.
      */
     async getByConducteur(id_conducteur, dateDebut, dateFin) {
         // 1. On commence avec la requête de base et les paramètres de base.
         let sql = `
-            SELECT r.* 
+            SELECT r.id_recolte,
+                   r.id_producteur,
+                   r.id_conducteur,
+                   r.id_produit,
+                   r.quantite,
+                   d.id_date,
+                   d.jour,
+                   d.mois,
+                   d.annee,
+                   d.jour_semaine
             FROM recolte AS r
             JOIN dim_date AS d ON r.id_date = d.id_date
             WHERE r.id_conducteur = ?
@@ -99,22 +142,22 @@ class RecolteRepository {
 
         // 2. On ajoute dynamiquement les conditions de date si elles sont fournies.
         if (dateDebut) {
-            sql += ` AND d.jour_complet >= ?`; // On filtre sur la date complète
+            sql += ` AND d.jour >= ?`; // On filtre sur la date complète
             params.push(dateDebut);
         }
 
         if (dateFin) {
-            sql += ` AND d.jour_complet <= ?`;
+            sql += ` AND d.jour <= ?`;
             params.push(dateFin);
         }
 
         // 3. On ajoute le tri à la fin.
-        sql += ` ORDER BY d.jour_complet DESC, r.periode DESC`;
+        sql += ` ORDER BY d.jour DESC`;
 
         // 4. On exécute la requête construite dynamiquement.
         const [rows] = await db.execute(sql, params);
 
-        return rows.map(this.mapRowToModel);
+        return rows;
     }
 
     /**

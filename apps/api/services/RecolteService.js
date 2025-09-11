@@ -17,10 +17,11 @@ class RecolteService{
 
 
         const allowedData = {
-            id_user    : dataFromController.id_user,
-            id_produit : dataFromController.id_produit,
-            id_date    : dataFromController.id_date,
-            quantite   : dataFromController.quantite
+            id_producteur : dataFromController.id_producteur,
+            id_conducteur : dataFromController.id_conducteur,
+            id_produit    : dataFromController.id_produit,
+            id_date       : dataFromController.id_date,
+            quantite      : dataFromController.quantite
         };
 
         const idRecolte = await RecolteRepository.create(allowedData)
@@ -35,7 +36,7 @@ class RecolteService{
      */
 
     async getoneById(idRecolte) {
-        const Recolte = await RecolteRepository.findById(idRecolte);
+        const Recolte = await RecolteRepository.findByIdDetail(idRecolte);
         if (!Recolte) {
             throw new NotFoundError(`Le Recolte avec l'ID ${idRecolte} n'a pas été trouvé.`);
         }
