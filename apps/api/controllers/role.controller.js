@@ -59,7 +59,7 @@ class RoleController{
      * @access  Private
      */
     updateRole = catchAsync(async (req,res,next)=> {
-        const {roleId} = req.params;
+        const roleId = req.params.roleId;
         const performingUserId = req.user.id_user;
 
 
@@ -78,7 +78,7 @@ class RoleController{
      * @access  Private
      */
     deleteRole = catchAsync(async (req,res,next)=> {
-        const {roleId} = req.params;
+        const roleId = req.params.roleId;
         const result = await RoleService.delete(roleId);
         res.status(200).json({
             status: 'success',

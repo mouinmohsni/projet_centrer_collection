@@ -64,7 +64,7 @@ class CircuitController{
      * @access  Private
      */
     addUserToCircuit = catchAsync(async (req, res, next) => {
-        const { circuitId } = req.params;
+        const circuitId= req.params.circuitId;
         const { userId } = req.body; // On s'attend à recevoir l'ID de l'utilisateur dans le body
         const performingUserId = req.user.id_user;
         if (!userId) {
@@ -109,7 +109,7 @@ class CircuitController{
      *@access  Private
      */
     getUsersOfCircuit = catchAsync(async (req, res, nex)=>{
-        const { circuitId } = req.params;
+        const circuitId = req.params.circuitId;
         const users = await circuitService.getUsersOfCircuit(circuitId);
         res.status(200).json({
             status: 'success',
@@ -149,7 +149,7 @@ class CircuitController{
      * @access  Private
      */
     updateCircuit = catchAsync(async (req,res,next)=> {
-        const {circuitId} = req.params;
+        const circuitId = req.params.circuitId;
 
         const { nom, description } = req.body;
         const updateData = { nom, description };
@@ -169,7 +169,7 @@ class CircuitController{
      * @access  Private
      */
     deleteCircuit = catchAsync(async (req,res,next)=> {
-        const {circuitId} = req.params;
+        const circuitId= req.params.circuitId;
         const result = await circuitService.deleteCircuit(circuitId);
         res.status(200).json({
             status: 'success',

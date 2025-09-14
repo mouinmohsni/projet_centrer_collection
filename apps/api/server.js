@@ -12,6 +12,8 @@ const roleRoutes = require('./routes/role.routes');
 const recolteRoute = require('./routes/Recolte.routes');
 const produitRoute =require('./routes/produit.routes');
 const livraisonRoute = require('./routes/livraison.routes');
+const fichePaieId = require('./routes/FichePaieId.routes');
+
 
 // Import des gestionnaires d'erreur
 const NotFoundError = require('./util/NotFoundError');
@@ -32,6 +34,16 @@ app.use(cors());
 // 2. Parser le corps des requêtes JSON. C'est la ligne qui remplit req.body.
 app.use(express.json(), express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    console.log('🔧 Middleware de simulation : Ajout de req.user factice.');
+    req.user = {
+        id_user: 1, // Simule l'utilisateur avec l'ID 1
+        nom: 'Admin Test',
+        id_role: 1 // Simule le rôle d'administrateur
+    };
+    next(); // Passe à la suite (vos routes et contrôleurs)
+});
+
 
 // =================================================================
 // BLOC 3 : ROUTES
@@ -49,6 +61,7 @@ app.use('/api/roles',roleRoutes);
 app.use('/api/recoltes',recolteRoute);
 app.use('/api/produits',produitRoute);
 app.use('/api/livraisons',livraisonRoute);
+app.use('/api/fichePaies',fichePaieId);
 
 
 

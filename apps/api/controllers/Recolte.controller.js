@@ -59,7 +59,7 @@ class RecolteController{
      * @access  Private
      */
     updateRecolte = catchAsync(async (req,res,next)=> {
-        const {recolteId} = req.params
+        const recolteId = req.params.recolteId
         const performingUserId = req.user.id_user;
 
         const result = await RecolteService.update(recolteId,req.body,performingUserId);
@@ -76,7 +76,7 @@ class RecolteController{
      * @access  Private
      */
     deleteRecolte = catchAsync(async (req,res,next)=> {
-        const {recolteId} = req.params;
+        const recolteId = req.params.recolteId;
         const result = await RecolteService.delete(recolteId);
         res.status(200).json({
             status: 'success',

@@ -59,7 +59,7 @@ class ProduitController{
      * @access  Private
      */
     updateProduit = catchAsync(async (req,res,next)=> {
-        const {produitId} = req.params;
+        const produitId = req.params.produitId;
         const performingUserId = req.user.id_user;
         const result = await ProduitService.update(produitId,req.body,performingUserId);
         res.status(200).json({
@@ -75,7 +75,7 @@ class ProduitController{
      * @access  Private
      */
     deleteProduit = catchAsync(async (req,res,next)=> {
-        const {produitId} = req.params;
+        const produitId = req.params.produitId;
         const result = await ProduitService.delete(produitId);
         res.status(200).json({
             status: 'success',

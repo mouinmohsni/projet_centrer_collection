@@ -11,7 +11,7 @@ class VoitureController{
      * @access  Private (à définir plus tard)
      */
     createVoiture = catchAsync(async (req, res, next) => {
-        const performingUserId = req.body.performingUserId
+        const performingUserId = req.user.id_user;
         const nouveauVoiture = await VoitureService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',

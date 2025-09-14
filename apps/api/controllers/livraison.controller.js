@@ -59,7 +59,7 @@ class LivraisonController{
      * @access  Private
      */
     updateLivraison = catchAsync(async (req,res,next)=> {
-        const {livraisonId} = req.params;
+        const livraisonId = req.params.livraisonId;
         const performingUserId = req.user.id_user;
         const result = await LivraisonService.update(livraisonId,req.body,performingUserId);
         res.status(200).json({
@@ -75,7 +75,7 @@ class LivraisonController{
      * @access  Private
      */
     deleteLivraison = catchAsync(async (req,res,next)=> {
-        const {livraisonId} = req.params;
+        const livraisonId = req.params.livraisonId;
         const result = await LivraisonService.delete(livraisonId);
         res.status(200).json({
             status: 'success',

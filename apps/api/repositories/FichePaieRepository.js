@@ -42,15 +42,33 @@ class FichePaieRepository {
      * @param {number} id_fiche
      * @returns {Promise<FichePaie|null>}
      */
-    async findById(id_fiche) {
+    async findDetailById(id_fiche) {
         const [rows] = await db.execute(
-            `SELECT  f.id_fiche, f.id_user, u.nom, f.id_date, d.jour, f.salaire_base, f.prime, f.retenue, f.net_paye
+            `SELECT  f.id_fiche, f.id_user, u.nom, f.id_date, d.jour, f.salaire_base, f.prime, f.retenue, f.net_paye,
+                f.created_by ,f.updated_by,f.created_at,f.updated_at
                 FROM fiche_paie AS f
                 LEFT JOIN user u on f.id_user = u.id_user
                 LEFT JOIN dim_date d on f.id_date = d.id_date
                 WHERE id_fiche = ?`,
             [id_fiche]
         );
+
+        return rows[0];
+    }
+
+    /**
+     * Récupère une fiche de paie par son ID.
+     * @param {number} id_fiche
+     * @returns {Promise<FichePaie|null>}
+     */
+    async findById(id_fiche) {
+        console.log("repo id_fiche :", id_fiche)
+        const [rows] = await db.execute(
+            `SELECT  * FROM fiche_paie
+                WHERE id_fiche = ?`,
+            [id_fiche]
+        );
+
         return this.mapRowToModel(rows[0]);
     }
 

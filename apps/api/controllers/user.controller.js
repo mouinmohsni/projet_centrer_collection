@@ -59,7 +59,7 @@ class UserController{
      * @access  Private
      */
     updateUser = catchAsync(async (req,res,next)=> {
-        const {userId} = req.params;
+        const userId= req.params.userId;
 
         const performingUserId = req.user.id_user;
 
@@ -77,7 +77,7 @@ class UserController{
      * @access  Private
      */
     deleteUser = catchAsync(async (req,res,next)=> {
-        const {roleId} = req.params;
+        const userId = req.params.userId;
         const result = await UserService.delete(userId);
         res.status(200).json({
             status: 'success',
@@ -92,7 +92,7 @@ class UserController{
      * @access  Private
      */
     getRecoltesByConducteur = catchAsync(async (req, res, next) => {
-        const { userId } = req.params;
+        const userId  = req.params.userId;
 
         // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
         const { dateDebut, dateFin } = req.query;
@@ -115,7 +115,7 @@ class UserController{
      * @access  Private
      */
     getRecoltesByProducteur = catchAsync(async (req, res, next) => {
-        const { userId } = req.params;
+        const userId = req.params.userId;
 
         // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
         const { dateDebut, dateFin } = req.query;
@@ -139,7 +139,7 @@ class UserController{
      */
 
     getvoitureByUser = catchAsync(async (req, res, next) => {
-        const { userId } = req.params;
+        const userId = req.params.userId;
         const voiture = await UserService.getVehiclesForUser(userId);
 
         res.status(200).json({
@@ -157,7 +157,7 @@ class UserController{
      * @access  Private
      */
     getLivraisonByConducteur = catchAsync(async (req, res, next) => {
-        const { userId } = req.params;
+        const userId = req.params.userId;
 
         // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
         const { dateDebut, dateFin } = req.query;
@@ -180,7 +180,7 @@ class UserController{
      * @access  Private
      */
     getLivraisonByClient = catchAsync(async (req, res, next) => {
-        const { userId } = req.params;
+        const userId= req.params.userId;
 
         // Les filtres de date viennent des query parameters (ex: ?dateDebut=2025-09-01&dateFin=2025-09-07)
         const { dateDebut, dateFin } = req.query;
