@@ -10,9 +10,9 @@ class VoitureRepository {
 
     async create(data) {
         const [result] = await db.execute(
-            `INSERT INTO voiture (immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat, id_conducteur)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [data.immatriculation, data.capacite, data.refrigerateur, data.km_total, data.km_prochain_vidange, data.etat, data.id_conducteur]
+            `INSERT INTO voiture (immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat, id_conducteur,created_by,updated_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?,?,?)`,
+            [data.immatriculation, data.capacite, data.refrigerateur, data.km_total, data.km_prochain_vidange, data.etat, data.id_conducteur,data.created_by,data.updated_by]
         );
         return result.insertId;
     }
@@ -27,10 +27,43 @@ class VoitureRepository {
         return rows.map(this.mapRowToModel);
     }
 
-    async update(id_Voiture, data) {
+    // async update(id_Voiture, data) {
+    //     const [result] = await db.execute(
+    //         `UPDATE voiture SET immatriculation = ?, capacite = ?, refrigerateur = ?, km_total = ?, km_prochain_vidange = ?, etat = ?, updated_by =? WHERE id_Voiture = ?`,
+    //         [data.immatriculation, data.capacite, data.refrigerateur, data.km_total, data.km_prochain_vidange, data.etat,data.updated_by, id_Voiture]
+    //     );
+    //     return result.affectedRows > 0;
+    // }
+
+    async update(id, data) {
+        const updatableFields = ['immatriculation', 'capacite', 'refrigerateur', 'km_total', 'km_prochain_vidange', 'etat','updated_by'];
+
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id); // Ajouter l'ID pour la clause WHERE
+
+
+
         const [result] = await db.execute(
-            `UPDATE voiture SET immatriculation = ?, capacite = ?, refrigerateur = ?, km_total = ?, km_prochain_vidange = ?, etat = ? WHERE id_Voiture = ?`,
-            [data.immatriculation, data.capacite, data.refrigerateur, data.km_total, data.km_prochain_vidange, data.etat, id_Voiture]
+            `UPDATE voiture SET ${setClause} WHERE id_Voiture = ?`,
+            values
         );
         return result.affectedRows > 0;
     }

@@ -26,11 +26,11 @@ class UserRepository {
      * @returns {Promise<number>} L'ID du nouvel utilisateur.
      */
     async create(userData) {
-        const { nom, email, mot_de_passe, adresse, id_role, longitude, latitude } = userData;
+        const { nom, email, mot_de_passe, adresse, id_role, longitude, latitude,created_by,updated_by } = userData;
         const [result] = await db.query(
-            `INSERT INTO user (nom, email, mot_de_passe, adresse, id_role, longitude, latitude)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [nom, email, mot_de_passe, adresse, id_role, longitude, latitude]
+            `INSERT INTO user (nom, email, mot_de_passe, adresse, id_role, longitude, latitude,created_by,updated_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?,?,?)`,
+            [nom, email, mot_de_passe, adresse, id_role, longitude, latitude,created_by,updated_by]
         );
         return result.insertId;
     }
@@ -68,23 +68,56 @@ class UserRepository {
 
     /**
      * Met à jour un utilisateur.
-     * @param {number} id_user
-     * @param {object} userData - Les champs à mettre à jour.
+     * @param {number} id
+     * @param {object} data - Les champs à mettre à jour.
      * @returns {Promise<boolean>}
      */
-    async update(id_user, userData) {
-        // On ne met à jour que les champs fournis.
-        // C'est une approche plus flexible pour les mises à jour partielles.
-        const [currentUser] = await db.query(`SELECT * FROM user WHERE id_user = ?`, [id_user]);
-        if (!currentUser.length) return false;
+    // async update(id_user, userData) {
+    //     // On ne met à jour que les champs fournis.
+    //     // C'est une approche plus flexible pour les mises à jour partielles.
+    //     const [currentUser] = await db.query(`SELECT * FROM user WHERE id_user = ?`, [id_user]);
+    //     if (!currentUser.length) return false;
+    //
+    //     const updatedData = { ...currentUser[0], ...userData };
+    //
+    //     const { nom, email, adresse, id_role, longitude, latitude } = updatedData;
+    //     const [result] = await db.query(
+    //         `UPDATE user SET nom = ?, email = ?, adresse = ?, id_role = ?, longitude = ?, latitude = ?
+    //          WHERE id_user = ?`,
+    //         [nom, email, adresse, id_role, longitude, latitude, id_user]
+    //     );
+    //     return result.affectedRows > 0;
+    // }
 
-        const updatedData = { ...currentUser[0], ...userData };
+    async update(id, data) {
+        const updatableFields = ['nom', 'email','mot_de_passe','telephone' ,'adresse', 'id_role', 'longitude', 'latitude','updated_by'];
 
-        const { nom, email, adresse, id_role, longitude, latitude } = updatedData;
-        const [result] = await db.query(
-            `UPDATE user SET nom = ?, email = ?, adresse = ?, id_role = ?, longitude = ?, latitude = ?
-             WHERE id_user = ?`,
-            [nom, email, adresse, id_role, longitude, latitude, id_user]
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id); // Ajouter l'ID pour la clause WHERE
+
+
+
+        const [result] = await db.execute(
+            `UPDATE user SET ${setClause} WHERE id_user = ?`,
+            values
         );
         return result.affectedRows > 0;
     }

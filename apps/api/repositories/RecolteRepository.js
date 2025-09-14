@@ -19,11 +19,11 @@ class RecolteRepository {
      * @returns {Promise<number>} L'ID de la nouvelle récolte.
      */
     async create(data) {
-        const { id_producteur ,id_conducteur , id_produit, id_date, quantite } = data;
+        const { id_producteur ,id_conducteur , id_produit, id_date, quantite ,created_by,updated_by } = data;
         const [result] = await db.execute(
-            `INSERT INTO recolte (id_producteur,id_conducteur, id_produit, id_date, quantite)
-             VALUES (?,?, ?, ?, ?)`,
-            [id_producteur, id_conducteur, id_produit, id_date, quantite]
+            `INSERT INTO recolte (id_producteur,id_conducteur, id_produit, id_date, quantite,created_by,updated_by)
+             VALUES (?,?, ?, ?, ?,?,?)`,
+            [id_producteur, id_conducteur, id_produit, id_date, quantite, created_by, updated_by]
         );
         return result.insertId;
     }
@@ -162,16 +162,50 @@ class RecolteRepository {
 
     /**
      * 🔄 Met à jour une récolte.
-     * @param {number} id_recolte
+     * @param {number} id
      * @param {object} data - Les données à mettre à jour (ex: { quantite: 150 }).
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    async update(id_recolte, data) {
-        // Pour l'instant, on ne met à jour que la quantité, mais on pourrait étendre
-        const { quantite } = data;
+    // async update(id_recolte, data) {
+    //     // Pour l'instant, on ne met à jour que la quantité, mais on pourrait étendre
+    //     const { quantite } = data;
+    //     const [result] = await db.execute(
+    //         `UPDATE recolte SET quantite = ? WHERE id_recolte = ?`,
+    //         [quantite, id_recolte]
+    //     );
+    //     return result.affectedRows > 0;
+    // }
+
+    async update(id, data) {
+        const updatableFields = ['id_producteur', 'id_conducteur', 'id_produit', 'id_date', 'quantite', 'updated_by']
+        ;
+
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id); // Ajouter l'ID pour la clause WHERE
+
+
+
         const [result] = await db.execute(
-            `UPDATE recolte SET quantite = ? WHERE id_recolte = ?`,
-            [quantite, id_recolte]
+            `UPDATE recolte SET ${setClause} WHERE id_recolte = ?`,
+            values
         );
         return result.affectedRows > 0;
     }

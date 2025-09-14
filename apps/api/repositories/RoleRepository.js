@@ -21,8 +21,8 @@ class RoleRepository {
      */
     async create(data) {
         const [result] = await db.execute(
-            `INSERT INTO role (libelle) VALUES (?)`,
-            [data.libelle]
+            `INSERT INTO role (libelle , created_by,updated_by) VALUES (?,?,?)`,
+            [data.libelle ,data.created_by ,data.updated_by]
         );
         return result.insertId;
     }
@@ -57,8 +57,8 @@ class RoleRepository {
      */
     async update(id_role, data) {
         const [result] = await db.execute(
-            `UPDATE role SET libelle = ? WHERE id_role = ?`,
-            [data.libelle, id_role]
+            `UPDATE role SET libelle = ?,updated_by = ? WHERE id_role = ?`,
+            [data.libelle,data.updated_by, id_role]
         );
         return result.affectedRows > 0;
     }

@@ -9,14 +9,14 @@ class CircuitUserRepository {
 
     /**
      * ➕ Associe un utilisateur à un circuit.
-     * @param {number} id_circuit
-     * @param {number} id_user
+     * @param {Object} data
      * @returns {Promise<boolean>} True si l'insertion a réussi.
      */
-    async create(id_circuit, id_user) {
+    async create(data) {
+         const {id_circuit, id_user,created_by, updated_by} =data
         const [result] = await db.query(
-            `INSERT INTO circuit_user (id_circuit, id_user) VALUES (?, ?)`,
-            [id_circuit, id_user]
+            `INSERT INTO circuit_user (id_circuit, id_user,created_by, updated_by) VALUES (?, ?,?,?)`,
+            [id_circuit, id_user,created_by, updated_by]
         );
         return result.affectedRows > 0;
     }
@@ -93,10 +93,7 @@ class CircuitUserRepository {
     async replaceUserInCircuit(id_circuit, old_id_user, new_id_user) {
 
         await this.delete(id_circuit, old_id_user);
-
-
-        return this.create(id_circuit, new_id_user);;
-
+        return this.create({id_circuit, new_id_user});
     }
 
     /**

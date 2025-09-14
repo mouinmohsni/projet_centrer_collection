@@ -22,11 +22,11 @@ class LivraisonRepository {
      */
     async create(data) {
 
-        const { id_client,id_livreur, id_produit, id_date, quantite } = data;
+        const { id_client,id_livreur, id_produit, id_date, quantite,created_by,updated_by } = data;
         const [result] = await db.execute(
-            `INSERT INTO livraison (id_client,id_livreur, id_produit, id_date, quantite)
-             VALUES (?,?, ?, ?, ?)`,
-            [id_client,id_livreur, id_produit, id_date, quantite]
+            `INSERT INTO livraison (id_client,id_livreur, id_produit, id_date,quantite,created_by,created_at,updated_by,updated_at  )
+             VALUES (?,?, ?, ?, ?,?,?,?,?)`,
+            [id_client,id_livreur, id_produit, id_date, quantite,created_by,updated_by]
         );
         return result.insertId;
     }
@@ -151,11 +151,35 @@ class LivraisonRepository {
      * @param {object} data - Les données à mettre à jour (ex: { quantite: 50 }).
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
+
     async update(id_livraison, data) {
-        const { quantite } = data;
+        const updatableFields = ["id_client","id_livreur", "id_produit", "id_date", "quantite","updated_by"];
+
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id_livraison); // Ajouter l'ID pour la clause WHERE
+
+
+
         const [result] = await db.execute(
-            `UPDATE livraison SET quantite = ? WHERE id_livraison = ?`,
-            [quantite, id_livraison]
+            `UPDATE livraison SET ${setClause} WHERE id_livraison = ?`,
+            values
         );
         return result.affectedRows > 0;
     }

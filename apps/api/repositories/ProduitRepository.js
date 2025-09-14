@@ -20,10 +20,10 @@ class ProduitRepository {
      * @returns {Promise<number>} L'ID du nouveau produit.
      */
     async create(data) {
-        const { nom, unite } = data;
+        const { nom, unite , created_by , updated_by } = data;
         const [result] = await db.execute(
-            `INSERT INTO produit (nom, unite) VALUES (?, ?)`,
-            [nom, unite]
+            `INSERT INTO produit (nom, unite ,created_by , updated_by) VALUES (?, ?,?,?)`,
+            [nom, unite,created_by,updated_by]
         );
         return result.insertId;
     }
@@ -52,15 +52,48 @@ class ProduitRepository {
 
     /**
      * 🔄 Met à jour un produit.
-     * @param {number} id_produit
+     * @param {number} id
      * @param {object} data - Les données à mettre à jour { nom, unite }.
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    async update(id_produit, data) {
-        const { nom, unite } = data;
+    // async update(id_produit, data) {
+    //     const { nom, unite } = data;
+    //     const [result] = await db.execute(
+    //         `UPDATE produit SET nom = ?, unite = ? WHERE id_produit = ?`,
+    //         [nom, unite, id_produit]
+    //     );
+    //     return result.affectedRows > 0;
+    // }
+
+    async update(id, data) {
+        const updatableFields = ['nom', 'unite', 'updated_by'];
+
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id); // Ajouter l'ID pour la clause WHERE
+
+
+
         const [result] = await db.execute(
-            `UPDATE produit SET nom = ?, unite = ? WHERE id_produit = ?`,
-            [nom, unite, id_produit]
+            `UPDATE produit SET ${setClause} WHERE id_produit = ?`,
+            values
         );
         return result.affectedRows > 0;
     }

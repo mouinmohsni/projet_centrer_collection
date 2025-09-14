@@ -19,11 +19,11 @@ class CircuitExecutionRepository {
      * @returns {Promise<number>} L'ID de la nouvelle exécution.
      */
     async create(data) {
-        const { id_circuit, id_date, id_Voiture, km_parcouru } = data;
+        const { id_circuit, id_date, id_Voiture, km_parcouru,created_by, updated_by } = data;
         const [result] = await db.query(
-            `INSERT INTO circuit_execution (id_circuit, id_date, id_Voiture, km_parcouru)
-             VALUES (?, ?, ?, ?)`,
-            [id_circuit, id_date, id_Voiture, km_parcouru]
+            `INSERT INTO circuit_execution (id_circuit, id_date, id_Voiture, km_parcouru,created_by, updated_by)
+             VALUES (?, ?, ?, ?,?,?)`,
+            [id_circuit, id_date, id_Voiture, km_parcouru,created_by, updated_by]
         );
         return result.insertId;
     }
@@ -65,17 +65,50 @@ class CircuitExecutionRepository {
 
     /**
      * ✏️ Met à jour une exécution.
-     * @param {number} id_execution
+     * @param {number} id
      * @param {object} data
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    async update(id_execution, data) {
-        const { id_circuit, id_date, id_Voiture, km_parcouru } = data;
-        const [result] = await db.query(
-            `UPDATE circuit_execution
-             SET id_circuit = ?, id_date = ?, id_Voiture = ?, km_parcouru = ?
-             WHERE id_execution = ?`,
-            [id_circuit, id_date, id_Voiture, km_parcouru, id_execution]
+    // async update(id_execution, data) {
+    //     const { id_circuit, id_date, id_Voiture, km_parcouru } = data;
+    //     const [result] = await db.query(
+    //         `UPDATE circuit_execution
+    //          SET id_circuit = ?, id_date = ?, id_Voiture = ?, km_parcouru = ?
+    //          WHERE id_execution = ?`,
+    //         [id_circuit, id_date, id_Voiture, km_parcouru, id_execution]
+    //     );
+    //     return result.affectedRows > 0;
+    // }
+
+    async update(id, data) {
+        const updatableFields = ['id_circuit', 'id_date', 'id_Voiture', 'km_parcouru', 'id_execution', 'updated_by'];
+
+        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableFields.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        // 3. Construire la requête dynamiquement à partir des données filtrées.
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+
+        if (fields.length === 0) {
+            // Le client n'a envoyé aucun champ modifiable.
+            return false;
+        }
+
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        values.push(id); // Ajouter l'ID pour la clause WHERE
+
+
+
+        const [result] = await db.execute(
+            `UPDATE circuit_execution SET ${setClause} WHERE id_execution = ?`,
+            values
         );
         return result.affectedRows > 0;
     }
