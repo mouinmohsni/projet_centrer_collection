@@ -11,7 +11,8 @@ class VoitureController{
      * @access  Private (à définir plus tard)
      */
     createVoiture = catchAsync(async (req, res, next) => {
-        const nouveauVoiture = await VoitureService.create(req.body);
+        const performingUserId = req.body.performingUserId
+        const nouveauVoiture = await VoitureService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -54,18 +55,19 @@ class VoitureController{
     });
 
     /**
-     * @desc    modifier un d'un circuit
+     * @desc    modifier un d'une voiture
      * @route   PUT /api/voitures/:voitureId
      * @access  Private
      */
     updateVoiture = catchAsync(async (req,res,next)=> {
         const {voitureId} = req.params;
+        const performingUserId = req.user.id_user;
 
-        const { immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat } = req.body;
+        const { immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat} = req.body;
         const updateData = { immatriculation, capacite, refrigerateur, km_total, km_prochain_vidange, etat };
 
 
-        const result = await VoitureService.updateVoiture(voitureId,updateData);
+        const result = await VoitureService.updateVoiture(voitureId,updateData,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result
@@ -96,13 +98,13 @@ class VoitureController{
     addUserToVoiture = catchAsync(async (req, res, next) => {
         const { voitureId } = req.params;
         const { userId } = req.body; // On s'attend à recevoir l'ID de l'utilisateur dans le body
-
+        const performingUserId = req.user.id_user;
         if (!userId) {
             // C'est une validation simple, on pourrait utiliser une librairie comme Joi ou Zod
             return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un userId.' });
         }
 
-        const result = await VoitureService.assignDriverToVehicle(voitureId,userId);
+        const result = await VoitureService.assignDriverToVehicle(voitureId,userId,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result
@@ -111,8 +113,9 @@ class VoitureController{
 
     unassignDriver = catchAsync(async (req, res, next) => {
         const { voitureId } = req.params;
+        const performingUserId = req.user.id_user;
 
-        const updatedVoiture = await VoitureService.unassignDriverFromVehicle(voitureId);
+        const updatedVoiture = await VoitureService.unassignDriverFromVehicle(voitureId,performingUserId);
 
         res.status(200).json({
             status: 'success',
@@ -131,6 +134,7 @@ class VoitureController{
     findWithDriver = catchAsync(async (req, res, next) => {
         const { voitureId } = req.params;
         const result = await VoitureService.findWithDriver(voitureId);
+
         res.status(200).json({
             status: 'success',
             voiture: result.voiture,

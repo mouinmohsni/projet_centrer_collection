@@ -11,7 +11,8 @@ class LivraisonController{
      * @access  Private (à définir plus tard)
      */
     createLivraison = catchAsync(async (req, res, next) => {
-        const newLivraison = await LivraisonService.create(req.body);
+        const performingUserId = req.user.id_user;
+        const newLivraison = await LivraisonService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -59,10 +60,8 @@ class LivraisonController{
      */
     updateLivraison = catchAsync(async (req,res,next)=> {
         const {livraisonId} = req.params;
-
-
-
-        const result = await LivraisonService.update(livraisonId,req.body);
+        const performingUserId = req.user.id_user;
+        const result = await LivraisonService.update(livraisonId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

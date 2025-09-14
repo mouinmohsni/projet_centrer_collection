@@ -85,15 +85,13 @@ class CircuitUserRepository {
 
     /**
      * Remplace une association utilisateur sur un circuit par une nouvelle.
-     * @param {number} id_circuit - L'ID du circuit concerné.
-     * @param {number} old_id_user - L'ID de l'utilisateur à remplacer.
-     * @param {number} new_id_user - L'ID du nouvel utilisateur.
+     * @param {Object} data
      * @returns {Promise<boolean>} True si le remplacement a réussi.
      */
-    async replaceUserInCircuit(id_circuit, old_id_user, new_id_user) {
-
+    async replaceUserInCircuit(data) {
+        const {id_circuit, old_id_user, new_id_user,created_by,updated_by} =data
         await this.delete(id_circuit, old_id_user);
-        return this.create({id_circuit, new_id_user});
+        return this.create({id_circuit, new_id_user,created_by,updated_by});
     }
 
     /**

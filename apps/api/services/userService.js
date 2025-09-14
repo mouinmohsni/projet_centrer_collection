@@ -2,6 +2,7 @@ const userRepository = require('../repositories/UserRepository');
 const NotFoundError = require('../util/NotFoundError');
 const recolteRepository = require('../repositories/RecolteRepository')
 const livraisonRepository = require('../repositories/LivraisonRepository')
+const FichePaieRepository = require("../repositories/FichePaieRepository");
 
 class UserService {
 
@@ -136,6 +137,14 @@ class UserService {
         const livraison = await livraisonRepository.getByClientDetailed(id_client, dateDebut, dateFin);
 
         return livraison;
+    }
+
+    async getFichePaieByUserId(userId) {
+        const fiche = await FichePaieRepository.getByUser(userId);
+        if (!fiche) {
+            throw new NotFoundError(`Le Fiche de Paie avec l'ID ${userId} n'a pas été trouvé.`);
+        }
+        return fiche;
     }
 }
 

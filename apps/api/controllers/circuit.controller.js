@@ -12,10 +12,11 @@ class CircuitController{
      */
     createCircuit = catchAsync(async (req, res, next) => {
         const { nom, description } = req.body;
+        const performingUserId = req.user.id_user;
 
         const newCercuit = { nom, description };
 
-        const nouveauCircuit = await circuitService.createCircuit(newCercuit);
+        const nouveauCircuit = await circuitService.createCircuit(newCercuit,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -65,13 +66,13 @@ class CircuitController{
     addUserToCircuit = catchAsync(async (req, res, next) => {
         const { circuitId } = req.params;
         const { userId } = req.body; // On s'attend à recevoir l'ID de l'utilisateur dans le body
-
+        const performingUserId = req.user.id_user;
         if (!userId) {
             // C'est une validation simple, on pourrait utiliser une librairie comme Joi ou Zod
             return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un userId.' });
         }
 
-        const result = await circuitService.addUserToCircuit(circuitId, userId);
+        const result = await circuitService.addUserToCircuit(circuitId, userId,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result
@@ -128,13 +129,13 @@ class CircuitController{
     updateUserInCircuit = catchAsync(async (req,res,next)=> {
         const {circuitId ,userId} = req.params;
         const {newUserId } = req.body;
-
+        const performingUserId = req.user.id_user;
         if (!newUserId) {
             return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un newUserId dans le corps de la requête.' });
         }
 
 
-        const result = await circuitService.updateUserInCircuit(circuitId, userId,newUserId );
+        const result = await circuitService.updateUserInCircuit(circuitId, userId,newUserId,performingUserId );
         res.status(200).json({
             status: 'success',
             data: result
@@ -152,9 +153,9 @@ class CircuitController{
 
         const { nom, description } = req.body;
         const updateData = { nom, description };
+        const performingUserId = req.user.id_user;
 
-
-        const result = await circuitService.updateCircuit(circuitId,updateData);
+        const result = await circuitService.updateCircuit(circuitId,updateData,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

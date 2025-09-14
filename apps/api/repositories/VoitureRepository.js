@@ -69,9 +69,10 @@ class VoitureRepository {
     }
 
     async assignUnassignDriverToVehicle (id_Voiture, data) {
+        const {id_conducteur,performingUserId} =data
         const [result] = await db.execute(
-            `UPDATE voiture SET id_conducteur = ? WHERE id_Voiture = ?`,
-            [data.id_conducteur, id_Voiture]
+            `UPDATE voiture SET id_conducteur = ?, updated_by =? WHERE id_Voiture = ?`,
+            [id_conducteur, performingUserId , id_Voiture]
         );
         return result.affectedRows > 0;
     }

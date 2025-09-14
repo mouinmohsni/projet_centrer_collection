@@ -11,9 +11,10 @@ class LivraisonService{
     /**
      * creation d'un Livraison
      * @param {object} dataFromController
+     * @param {number} performingUserId
      * @returns {Promise<Livraison>} Le nouveau Livraison.
      */
-    async create(dataFromController){
+    async create(dataFromController,performingUserId){
 
 
         const allowedData = {
@@ -21,7 +22,9 @@ class LivraisonService{
             id_livreur    : dataFromController.id_livreur,
             id_produit : dataFromController.id_produit,
             id_date    : dataFromController.id_date,
-            quantite   : dataFromController.quantite
+            quantite   : dataFromController.quantite,
+            created_by: performingUserId,
+            updated_by: performingUserId
         };
 
         const idLivraison = await LivraisonRepository.create(allowedData)
@@ -54,20 +57,23 @@ class LivraisonService{
 
 
     /**
-     * modifier les informations d'un Livraison
+     * modifier les informations d'une Livraison
      * @param {number} idLivraison
+     * @param {number} performingUserId
      * @param {object} data
      * @returns {Promise<{message: string}>}
      */
-    async update (idLivraison, data){
+    async update (idLivraison, data,performingUserId){
         const Livraison = await LivraisonRepository.findById(idLivraison);
 
         if (!Livraison) {
-            throw new NotFoundError(`Le Livraison avec l'ID ${idLivraison} n'existe pas.`);
+            throw new NotFoundError(`La Livraison avec l'ID ${idLivraison} n'existe pas.`);
         }
-        await LivraisonRepository.update(idLivraison, data);
+        const dataForRepo={...data, updated_by:performingUserId}
 
-        return { message: 'le Livraison est modifier avec succès.' };
+        await LivraisonRepository.update(idLivraison, dataForRepo);
+
+        return { message: 'la Livraison est modifier avec succès.' };
 
     }
 
@@ -80,7 +86,7 @@ class LivraisonService{
 
         const Livraison = await LivraisonRepository.findById(idLivraison)
         if(!Livraison){
-            throw new NotFoundError(`Le circuit avec l'ID ${idLivraison} n'existe pas.`);
+            throw new NotFoundError(`La livraison avec l'ID ${idLivraison} n'existe pas.`);
         }
 
         await LivraisonRepository.delete(idLivraison)

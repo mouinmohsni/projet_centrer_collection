@@ -11,14 +11,17 @@ class ProduitService{
     /**
      * creation d'un Produit
      * @param {object} dataFromController
+     * @param {number} performingUserId
      * @returns {Promise<Produit>} Le nouveau Produit.
      */
-    async create(dataFromController){
+    async create(dataFromController,performingUserId){
 
 
         const allowedData = {
             nom    : dataFromController.nom,
             unite : dataFromController.unite,
+            created_by: performingUserId,
+            updated_by: performingUserId
         };
 
         const idProduit = await produitRepository.create(allowedData)
@@ -53,16 +56,20 @@ class ProduitService{
     /**
      * modifier les informations d'un Produit
      * @param {number} idProduit
+     * @param {number} performingUserId
      * @param {object} data
      * @returns {Promise<{message: string}>}
      */
-    async update (idProduit, data){
+    async update (idProduit, data,performingUserId){
         const Produit = await produitRepository.findById(idProduit);
 
         if (!Produit) {
             throw new NotFoundError(`Le Produit avec l'ID ${idProduit} n'existe pas.`);
         }
-        await produitRepository.update(idProduit, data);
+
+        const dataForRepo = {...data, updated_by:performingUserId}
+
+        await produitRepository.update(idProduit,dataForRepo);
 
         return { message: 'le Produit est modifier avec succès.' };
 

@@ -11,7 +11,8 @@ class RoleController{
      * @access  Private (à définir plus tard)
      */
     createRole = catchAsync(async (req, res, next) => {
-        const newRole = await RoleService.create(req.body);
+        const performingUserId = req.user.id_user;
+        const newRole = await RoleService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -59,10 +60,11 @@ class RoleController{
      */
     updateRole = catchAsync(async (req,res,next)=> {
         const {roleId} = req.params;
+        const performingUserId = req.user.id_user;
 
 
 
-        const result = await RoleService.update(roleId,req.body);
+        const result = await RoleService.update(roleId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

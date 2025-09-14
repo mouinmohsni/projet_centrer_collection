@@ -11,9 +11,10 @@ class RecolteService{
     /**
      * creation d'un Recolte
      * @param {object} dataFromController
+     * @param {number} performingUserId
      * @returns {Promise<Recolte>} Le nouveau Recolte.
      */
-    async create(dataFromController){
+    async create(dataFromController,performingUserId){
 
 
         const allowedData = {
@@ -21,7 +22,9 @@ class RecolteService{
             id_conducteur : dataFromController.id_conducteur,
             id_produit    : dataFromController.id_produit,
             id_date       : dataFromController.id_date,
-            quantite      : dataFromController.quantite
+            quantite      : dataFromController.quantite,
+            created_by: performingUserId,
+            updated_by: performingUserId
         };
 
         const idRecolte = await RecolteRepository.create(allowedData)
@@ -57,15 +60,18 @@ class RecolteService{
      * modifier les informations d'un Recolte
      * @param {number} idRecolte
      * @param {object} data
+     * @param {number} performingUserId
      * @returns {Promise<{message: string}>}
      */
-    async update (idRecolte, data){
+    async update (idRecolte, data,performingUserId){
         const Recolte = await RecolteRepository.findById(idRecolte);
 
         if (!Recolte) {
             throw new NotFoundError(`Le Recolte avec l'ID ${idRecolte} n'existe pas.`);
         }
-        await RecolteRepository.update(idRecolte, data);
+        const dataForRepo={...data, updated_by:performingUserId}
+
+        await RecolteRepository.update(idRecolte, dataForRepo);
 
         return { message: 'le Recolte est modifier avec succès.' };
 

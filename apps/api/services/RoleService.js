@@ -11,16 +11,18 @@ class RoleService{
     /**
      * creation d'un Role
      * @param {object} dataFromController
+     * @param {number} performingUserId
      * @returns {Promise<Role>} Le nouveau role.
      */
-    async create(dataFromController){
+    async create(dataFromController,performingUserId){
 
 
         const allowedData = {
             libelle: dataFromController.libelle,
+            created_by: performingUserId,
+            updated_by: performingUserId
         };
 
-        console.log("allowedData",allowedData)
 
         const idRole = await RoleRepository.create(allowedData)
         return RoleRepository.findById(idRole)
@@ -54,16 +56,18 @@ class RoleService{
     /**
      * modifier les informations d'un role
      * @param {number} idRole
+     * @param {number} performingUserId
      * @param {object} data
      * @returns {Promise<{message: string}>}
      */
-    async update (idRole, data){
+    async update (idRole, data,performingUserId){
         const role = await RoleRepository.findById(idRole);
 
         if (!role) {
             throw new NotFoundError(`Le role avec l'ID ${idRole} n'existe pas.`);
         }
-        await RoleRepository.update(idRole, data);
+        const dataForRepo={...data, updated_by:performingUserId}
+        await RoleRepository.update(idRole, dataForRepo);
 
         return { message: 'le role est modifier avec succès.' };
 

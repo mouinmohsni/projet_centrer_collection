@@ -11,7 +11,8 @@ class UserController{
      * @access  Private (à définir plus tard)
      */
     createRole = catchAsync(async (req, res, next) => {
-        const newRole = await UserService.create(req.body);
+        const performingUserId = req.user.id_user;
+        const newRole = await UserService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -60,7 +61,9 @@ class UserController{
     updateUser = catchAsync(async (req,res,next)=> {
         const {userId} = req.params;
 
-        const result = await UserService.update(userId,req.body);
+        const performingUserId = req.user.id_user;
+
+        const result = await UserService.update(userId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

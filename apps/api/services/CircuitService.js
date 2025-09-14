@@ -7,20 +7,23 @@ const NotFoundError = require('../util/NotFoundError')
 const BusinessLogicError = require('../util/BusinessLogicError')
 
 
-
-
-
 class CircuitService {
 
 
     /**
      * creation d'un circuit
      * @param {object} data
+     * @param {number} performingUserId
      * @returns {Promise<Circuit>} Le nouveau circuit.
      */
-    async createCircuit(data){
-
-        const id_circuit = await CircuitRepository.create(data)
+    async createCircuit(data,performingUserId){
+        const allowedData ={
+            nom : data.name,
+            description : data.description,
+            created_by : performingUserId,
+            updated_by : performingUserId
+        }
+        const id_circuit = await CircuitRepository.create(allowedData)
         return CircuitRepository.findById(id_circuit)
 
     }
@@ -51,9 +54,10 @@ class CircuitService {
      * ajouter un utilisateur a un circuit
      * @param {number} id_circuit
      * @param {number} userId
+     * @param {number} performingUserId
      * @returns {Promise<{message: string}>}
      */
-    async addUserToCircuit(id_circuit, userId) {
+    async addUserToCircuit(id_circuit, userId,performingUserId) {
         // 1. Vérifier que le circuit existe
         const circuit = await CircuitRepository.findById(id_circuit);
         if (!circuit) {
@@ -71,8 +75,15 @@ class CircuitService {
         if (associationExists) {
             throw new BusinessLogicError(`L'utilisateur ${userId} est déjà associé au circuit ${id_circuit}.`);
         }
+        const allowedData ={
+            id_circuit : id_circuit,
+            id_user  : userId ,
+            created_by :performingUserId,
+            updated_by :performingUserId
+        }
+
         // 4. Si tout est bon, on crée l'association
-        await CircuitUserRepository.create(id_circuit, userId);
+        await CircuitUserRepository.create(allowedData);
 
         return { message: 'Utilisateur ajouté au circuit avec succès.' };
     }
@@ -80,18 +91,21 @@ class CircuitService {
     /**
      * ajouter un utilisateur a un circuit
      * @param {number} id_circuit
+     * @param {number} performingUserId
      * @param {object} data
      * @returns {Promise<{message: string}>}
      */
 
 
-    async updateCircuit (id_circuit, data){
+    async updateCircuit (id_circuit, data,performingUserId){
         const circuit = await CircuitRepository.findById(id_circuit);
 
         if (!circuit) {
             throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
         }
-        await CircuitRepository.update(id_circuit, data);
+        const allowedData ={...data, updated_by :performingUserId
+        }
+        await CircuitRepository.update(id_circuit, allowedData);
 
         return { message: 'le circuit est modifier avec succès.' };
         
@@ -149,9 +163,10 @@ class CircuitService {
      * @param {number} id_circuit
      * @param {number} userId
      * @param {number} new_id
+     * @param {number} performingUserId
      * @returns {Promise<{message: string}>}
      */
-    async updateUserInCircuit (id_circuit,userId, new_id){
+    async updateUserInCircuit (id_circuit,userId, new_id,performingUserId){
 
         const user = await userRepository.findById(new_id)
         if(!user){
@@ -166,7 +181,14 @@ class CircuitService {
             throw new BusinessLogicError(`L'utilisateur ${userId}  n'est pas  associé au circuit ${id_circuit}.`);
         }
 
-        await CircuitUserRepository.replaceUserInCircuit(id_circuit,userId,new_id)
+        const allowedData ={
+            id_circuit : id_circuit,
+            id_user  : userId ,
+            created_by :performingUserId,
+            updated_by :performingUserId
+        }
+
+        await CircuitUserRepository.replaceUserInCircuit(allowedData)
         return { message: 'la modification est effectuer  avec succès.' };
 
     }

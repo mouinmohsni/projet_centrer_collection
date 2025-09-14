@@ -11,7 +11,8 @@ class RecolteController{
      * @access  Private (à définir plus tard)
      */
     createRecolte = catchAsync(async (req, res, next) => {
-        const newRecolte = await RecolteService.create(req.body);
+        const performingUserId = req.user.id_user;
+        const newRecolte = await RecolteService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -58,11 +59,10 @@ class RecolteController{
      * @access  Private
      */
     updateRecolte = catchAsync(async (req,res,next)=> {
-        const {recolteId} = req.params;
+        const {recolteId} = req.params
+        const performingUserId = req.user.id_user;
 
-
-
-        const result = await RecolteService.update(recolteId,req.body);
+        const result = await RecolteService.update(recolteId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

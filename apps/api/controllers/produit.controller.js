@@ -11,7 +11,8 @@ class ProduitController{
      * @access  Private (à définir plus tard)
      */
     createProduit = catchAsync(async (req, res, next) => {
-        const newProduit = await ProduitService.create(req.body);
+        const performingUserId = req.user.id_user;
+        const newProduit = await ProduitService.create(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
@@ -59,10 +60,8 @@ class ProduitController{
      */
     updateProduit = catchAsync(async (req,res,next)=> {
         const {produitId} = req.params;
-
-
-
-        const result = await ProduitService.update(produitId,req.body);
+        const performingUserId = req.user.id_user;
+        const result = await ProduitService.update(produitId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result
