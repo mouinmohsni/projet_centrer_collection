@@ -63,7 +63,6 @@ class FichePaieService{
      * @returns {Promise<{message: string}>}
      */
     async update (ficheId, data,performingUserId){
-        console.log(" service update ficheId :",ficheId)
         const fichePaie = await FichePaieRepository.findById(ficheId);
 
         if (!fichePaie) {

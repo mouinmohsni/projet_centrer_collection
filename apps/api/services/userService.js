@@ -3,6 +3,8 @@ const NotFoundError = require('../util/NotFoundError');
 const recolteRepository = require('../repositories/RecolteRepository')
 const livraisonRepository = require('../repositories/LivraisonRepository')
 const FichePaieRepository = require("../repositories/FichePaieRepository");
+const CircuitUserRepository = require('../repositories/CircuitUserRepository');
+
 
 class UserService {
 
@@ -139,12 +141,33 @@ class UserService {
         return livraison;
     }
 
-    async getFichePaieByUserId(userId) {
-        const fiche = await FichePaieRepository.getByUser(userId);
-        if (!fiche) {
-            throw new NotFoundError(`Le Fiche de Paie avec l'ID ${userId} n'a pas été trouvé.`);
+    /**
+     * Récupère l'le fiche de paie d'un utilisateur,
+     * @param {number} id_user - L'ID du client.
+     * @returns {Promise<object[]>}
+     */
+    async getFichePaieByUserId(id_user) {
+        const user = await userRepository.findById(id_user);
+        if (!user) {
+            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
         }
+        const fiche = await FichePaieRepository.getByUser(id_user)
+
         return fiche;
+    }
+
+    /**
+     * trouver les circuits au qu'elle appartient un utilisateur
+     * @param {number} id_user
+     * @returns {Promise<object[]>}
+     */
+    async findCircuitsByUser(id_user){
+        const user = await userRepository.findById(id_user);
+        if (!user) {
+            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+        }
+        const circuits = await CircuitUserRepository.findCircuitsByUser(id_user);
+       return circuits ;
     }
 }
 

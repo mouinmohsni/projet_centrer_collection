@@ -79,7 +79,9 @@ class CircuitRepository {
         // 3. Construire la requête dynamiquement à partir des données filtrées.
         const fields = Object.keys(dataToUpdate);
         const values = Object.values(dataToUpdate);
-
+        console.log("data :",data)
+        console.log("fields : ",fields)
+        console.log("values : ",values)
 
         if (fields.length === 0) {
             // Le client n'a envoyé aucun champ modifiable.

@@ -8,7 +8,7 @@ class CircuitController{
     /**
      * @desc    Créer un nouveau circuit
      * @route   POST /api/circuits
-     * @access  Private (à définir plus tard)
+     * @access   Public
      */
     createCircuit = catchAsync(async (req, res, next) => {
         const { nom, description } = req.body;
@@ -59,51 +59,6 @@ class CircuitController{
     });
 
     /**
-     * @desc    Ajouter un utilisateur à un circuit
-     * @route   POST /api/circuits/:circuitId/users
-     * @access  Private
-     */
-    addUserToCircuit = catchAsync(async (req, res, next) => {
-        const circuitId= req.params.circuitId;
-        const { userId } = req.body; // On s'attend à recevoir l'ID de l'utilisateur dans le body
-        const performingUserId = req.user.id_user;
-        if (!userId) {
-            // C'est une validation simple, on pourrait utiliser une librairie comme Joi ou Zod
-            return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un userId.' });
-        }
-
-        const result = await circuitService.addUserToCircuit(circuitId, userId,performingUserId);
-        res.status(200).json({
-            status: 'success',
-            data: result
-        });
-    });
-
-
-
-    /**
-     *@desc    supprimer un utilisateur à un circuit
-     *@route   DELETE  /api/circuits/:circuitId/users/:userId
-     *@access  Private
-     */
-
-    removeUserFromCircuit = catchAsync(async (req,res,next)=>{
-        const { circuitId ,userId } = req.params;
-
-        if (!userId) {
-            // C'est une validation simple, on pourrait utiliser une librairie comme Joi ou Zod
-            return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un userId.' });
-        }
-
-        const result = await circuitService.deleteUserToCircuit(circuitId, userId);
-        res.status(200).json({
-            status: 'success',
-            data: result
-        });
-
-    });
-
-    /**
      *@desc    recuperer tout les utilisateurs d'un circuit
      *@route   Get /api/circuits/:circuitId/users
      *@access  Private
@@ -122,40 +77,14 @@ class CircuitController{
     });
 
     /**
-     * @desc    modifier un utilisateur d'un circuit
-     * @route   PUT /api/circuits/:circuitId/user/:userId
-     * @access  Private
-     */
-    updateUserInCircuit = catchAsync(async (req,res,next)=> {
-        const {circuitId ,userId} = req.params;
-        const {newUserId } = req.body;
-        const performingUserId = req.user.id_user;
-        if (!newUserId) {
-            return res.status(400).json({ status: 'fail', message: 'Veuillez fournir un newUserId dans le corps de la requête.' });
-        }
-
-
-        const result = await circuitService.updateUserInCircuit(circuitId, userId,newUserId,performingUserId );
-        res.status(200).json({
-            status: 'success',
-            data: result
-        });
-
-    });
-
-    /**
      * @desc    modifier un d'un circuit
      * @route   PUT /api/circuits/:circuitId
      * @access  Private
      */
     updateCircuit = catchAsync(async (req,res,next)=> {
         const circuitId = req.params.circuitId;
-
-        const { nom, description } = req.body;
-        const updateData = { nom, description };
         const performingUserId = req.user.id_user;
-
-        const result = await circuitService.updateCircuit(circuitId,updateData,performingUserId);
+        const result = await circuitService.updateCircuit(circuitId,req.body,performingUserId);
         res.status(200).json({
             status: 'success',
             data: result

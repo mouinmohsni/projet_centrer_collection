@@ -18,11 +18,12 @@ class CircuitService {
      */
     async createCircuit(data,performingUserId){
         const allowedData ={
-            nom : data.name,
+            nom : data.nom,
             description : data.description,
             created_by : performingUserId,
             updated_by : performingUserId
         }
+
         const id_circuit = await CircuitRepository.create(allowedData)
         return CircuitRepository.findById(id_circuit)
 
@@ -44,7 +45,7 @@ class CircuitService {
 
     /**
      * recuperer tout les circuits
-     * @returns {Promise<Circuit[]>} tableau de tout les circuits
+     * @returns {Promise<Circuit[]>} tableau de touts les circuits
      */
     async getAllCircuits() {
         return CircuitRepository.getAll();
@@ -52,16 +53,23 @@ class CircuitService {
 
     /**
      * ajouter un utilisateur a un circuit
-     * @param {number} id_circuit
+     * @param {number} circuitId
      * @param {number} userId
      * @param {number} performingUserId
      * @returns {Promise<{message: string}>}
      */
-    async addUserToCircuit(id_circuit, userId,performingUserId) {
+    async addUserToCircuit(circuitId,userId,performingUserId) {
+        const allowedData ={
+            id_circuit : circuitId,
+            id_user    : userId ,
+            created_by : performingUserId,
+            updated_by : performingUserId
+        }
+
         // 1. Vérifier que le circuit existe
-        const circuit = await CircuitRepository.findById(id_circuit);
+        const circuit = await CircuitRepository.findById(circuitId);
         if (!circuit) {
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new NotFoundError(`Le circuit avec l'ID ${allowedData.id_circuit} n'existe pas.`);
         }
 
         // 2. Vérifier que l'utilisateur existe
@@ -71,16 +79,11 @@ class CircuitService {
         }
 
         // 3. Vérifier si l'association existe déjà pour éviter les doublons
-        const associationExists = await CircuitUserRepository.exists(id_circuit, userId);
+        const associationExists = await CircuitUserRepository.findByCircuitAndUser(circuitId, userId);
         if (associationExists) {
-            throw new BusinessLogicError(`L'utilisateur ${userId} est déjà associé au circuit ${id_circuit}.`);
+            throw new BusinessLogicError(`L'utilisateur ${userId} est déjà associé au circuit ${circuitId}.`);
         }
-        const allowedData ={
-            id_circuit : id_circuit,
-            id_user  : userId ,
-            created_by :performingUserId,
-            updated_by :performingUserId
-        }
+
 
         // 4. Si tout est bon, on crée l'association
         await CircuitUserRepository.create(allowedData);
@@ -89,7 +92,7 @@ class CircuitService {
     }
 
     /**
-     * ajouter un utilisateur a un circuit
+     * modifier les informations d'un circuit
      * @param {number} id_circuit
      * @param {number} performingUserId
      * @param {object} data
@@ -120,7 +123,7 @@ class CircuitService {
     
     
 
-    async deleteUserToCircuit(id_circuit,userId){
+    async removeUserFromCircuit(id_circuit, userId){
         const user = await userRepository.findById(userId)
         if(!user){
             throw new NotFoundError(`L'utilisateur avec l'ID ${userId} n'existe pas.`);
@@ -131,12 +134,12 @@ class CircuitService {
             throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
         }
 
-        const associationExists = await CircuitUserRepository.exists(id_circuit, userId);
+        const associationExists = await CircuitUserRepository.findByCircuitAndUser(id_circuit, userId);
         if (!associationExists) {
             throw new BusinessLogicError(`L'utilisateur ${userId}  n'est pas  associé au circuit ${id_circuit}.`);
         }
 
-        await CircuitUserRepository.delete(id_circuit,userId)
+        await CircuitUserRepository.delete(associationExists.id_circuit_user)
 
         return { message: 'Utilisateur est supprimer  du circuit avec succès.' };
 
@@ -176,19 +179,18 @@ class CircuitService {
         if(!circuit){
             throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
         }
-        const associationExists = await CircuitUserRepository.exists(id_circuit, userId);
+        const associationExists = await CircuitUserRepository.findByCircuitAndUser(id_circuit, userId);
         if (!associationExists) {
             throw new BusinessLogicError(`L'utilisateur ${userId}  n'est pas  associé au circuit ${id_circuit}.`);
         }
 
         const allowedData ={
             id_circuit : id_circuit,
-            id_user  : userId ,
-            created_by :performingUserId,
+            id_user  : new_id ,
             updated_by :performingUserId
         }
 
-        await CircuitUserRepository.replaceUserInCircuit(allowedData)
+        await CircuitUserRepository.update(associationExists.id_circuit_user,allowedData)
         return { message: 'la modification est effectuer  avec succès.' };
 
     }
