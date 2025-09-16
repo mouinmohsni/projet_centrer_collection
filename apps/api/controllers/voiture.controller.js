@@ -142,6 +142,24 @@ class VoitureController{
         });
     });
 
+    /**
+     * @desc    recupere la consomation de carburant total d'une voiture
+     * @route   get /api/voitures/:voitureId/carburants
+     * @access  Private
+     */
+    getTotalCoutByVoiture = catchAsync(async (req,res,next)=>{
+        const { voitureId } = req.params;
+        const { dateDebut, dateFin } = req.query;
+
+        const result = await VoitureService.getTotalCoutByVoiture(voitureId,dateDebut, dateFin)
+        res.status(200).json({
+            status: 'success',
+            total: result
+
+        });
+
+    });
+
 
 
     

@@ -28,4 +28,8 @@ router.route('/:voitureId')
     .put(voitureController.updateVoiture)
     .delete(voitureController.deleteVoiture);
 
+router.route('/:voitureId/carburants')
+    .get(voitureController.getTotalCoutByVoiture)
+
+
 module.exports = router;

@@ -32,9 +32,43 @@ class CarburantRepository {
      * @param {number} id_carburant
      * @returns {Promise<Carburant|null>}
      */
-    async getById(id_carburant) {
+    async findById(id_carburant) {
         const [rows] = await db.query(`SELECT * FROM carburant WHERE id_carburant = ?`, [id_carburant]);
         return this.mapRowToModel(rows[0]);
+    }
+
+    /**
+     * Récupère les détails très complets d'un enregistrement de carburant par son ID.
+     * @param {number} id_carburant - L'ID de l'enregistrement de carburant.
+     * @returns {Promise<object|null>} Un objet avec tous les détails, ou null si non trouvé.
+     */
+    async getDetailById(id_carburant) {
+        const [rows] = await db.query(`
+            SELECT
+                ca.*,
+                v.immatriculation,
+                d.jour,
+                d.periode,
+                creator.nom AS created_by_nom, -- Qui a créé l'enregistrement
+                updater.nom AS updated_by_nom, -- Qui a modifié l'enregistrement
+                driver.nom  AS driver_nom      -- Qui conduisait le véhicule
+            FROM
+                carburant AS ca
+                    LEFT JOIN
+                voiture AS v ON ca.id_Voiture = v.id_Voiture
+                    LEFT JOIN
+                dim_date AS d ON ca.id_date = d.id_date
+                    LEFT JOIN
+                user AS creator ON ca.created_by = creator.id_user -- 1ère jointure sur user
+                    LEFT JOIN
+                user AS updater ON ca.updated_by = updater.id_user -- 2ème jointure sur user
+                    LEFT JOIN
+                user AS driver ON v.id_conducteur = driver.id_user  -- 3ème jointure sur user !
+            WHERE
+                ca.id_carburant = ?
+        `, [id_carburant]);
+
+        return rows[0] || null;
     }
 
     /**
@@ -62,14 +96,6 @@ class CarburantRepository {
      * @param {object} data
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    // async update(id_carburant, data) {
-    //     const [result] = await db.query(
-    //         `UPDATE carburant SET id_Voiture = ?, id_date = ?, quantite = ?, cout = ? WHERE id_carburant = ?`,
-    //         [data.id_Voiture, data.id_date, data.quantite, data.cout, id_carburant]
-    //     );
-    //     return result.affectedRows > 0;
-    // }
-
     async update(id, data) {
         const updatableFields = ['id_Voiture', 'id_date','quantite', 'cout', 'id_carburant', 'updated_by'];
 
@@ -114,24 +140,131 @@ class CarburantRepository {
     }
 
     /**
-     * total carburan d'une voiture.
-     * @param {number} id_Voiture
-     * @returns {Promise<number>} consommation d'une voiture.
+     * Calcule la quantité totale de carburant pour une voiture, avec un filtre optionnel par période.
+     * @param {number} id_Voiture - L'ID de la voiture.
+     * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
+     * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
+     * @returns {Promise<number>} La quantité totale de carburant.
      */
-    async getTotalQuantiteByVoiture(id_Voiture) {
-        const [rows] = await db.query(`SELECT SUM(quantite) AS total_quantite FROM carburant WHERE id_Voiture = ?`, [id_Voiture]);
+    async getTotalQuantiteByVoiture(id_Voiture, dateDebut, dateFin) {
+        // 1. On commence avec la requête de base et les paramètres.
+        let sql = `
+        SELECT SUM(c.quantite) AS total_quantite 
+        FROM carburant AS c
+        JOIN dim_date AS d ON c.id_date = d.id_date
+        WHERE c.id_Voiture = ?
+    `;
+        const params = [id_Voiture];
+
+        // 2. On ajoute dynamiquement les filtres de date.
+        if (dateDebut) {
+            sql += ` AND d.jour >= ?`;
+            params.push(dateDebut);
+        }
+        if (dateFin) {
+            sql += ` AND d.jour <= ?`;
+            params.push(dateFin);
+        }
+
+        // 3. On exécute la requête construite.
+        const [rows] = await db.query(sql, params);
+
+        // 4. On retourne le résultat. SUM retourne toujours une seule ligne.
+        // Si aucun enregistrement ne correspond, SUM peut retourner NULL, donc on protège avec '|| 0'.
         return rows[0]?.total_quantite || 0;
     }
 
     /**
-     * cout total du carburan d'une voiture.
-     * @param {number} id_Voiture
-     * @returns {Promise<number>}  cout de consommation d'une voiture.
+     * Calcule le coût total du carburant pour une voiture, avec un filtre optionnel par période.
+     * @param {number} id_Voiture - L'ID de la voiture.
+     * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
+     * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
+     * @returns {Promise<Object>} Le coût total du carburant.
      */
-    async getTotalCoutByVoiture(id_Voiture) {
-        const [rows] = await db.query(`SELECT SUM(cout) AS total_cout FROM carburant WHERE id_Voiture = ?`, [id_Voiture]);
-        return rows[0]?.total_cout || 0;
+    async getTotalCoutByVoiture(id_Voiture, dateDebut, dateFin) {
+        // 1. On commence avec la requête de base et les paramètres.
+        let sql = `
+        SELECT SUM(c.cout) AS total_cout , SUM(c.quantite) AS total_quantite
+        FROM carburant AS c
+        JOIN dim_date AS d ON c.id_date = d.id_date
+        WHERE c.id_Voiture = ?
+    `;
+        const params = [id_Voiture];
+
+        // 2. On ajoute dynamiquement les filtres de date.
+        if (dateDebut) {
+            sql += ` AND d.jour >= ?`;
+            params.push(dateDebut);
+        }
+        if (dateFin) {
+            sql += ` AND d.jour <= ?`;
+            params.push(dateFin);
+        }
+
+        // 3. On exécute la requête construite.
+        const [rows] = await db.query(sql, params);
+        console.log(rows)
+
+        // 4. On retourne le résultat.
+        return rows || 0;
     }
+
+    /**
+     * Calcule la consommation par conducteur.
+     * Si un id_conducteur est fourni, filtre pour ce conducteur uniquement.
+     * Sinon, retourne un rapport pour tous les conducteurs.
+     * @param {number} [id_conducteur] - L'ID du conducteur à filtrer. Optionnel.
+     * @param {string} [dateDebut] - La date de début. Optionnelle.
+     * @param {string} [dateFin] - La date de fin. Optionnelle.
+     * @returns {Promise<object[]>}
+     */
+    async getConsumptionByDriver(id_conducteur, dateDebut, dateFin) {
+        let sql = `
+        SELECT
+            d.id_user,
+            d.nom AS driver_nom,
+            SUM(ca.quantite) AS total_quantite,
+            SUM(ca.cout) AS total_cout,
+            COUNT(ca.id_carburant) AS nombre_de_pleins
+        FROM
+            carburant AS ca
+        JOIN
+            voiture AS v ON ca.id_Voiture = v.id_Voiture
+        JOIN
+            user AS d ON v.id_conducteur = d.id_user
+        JOIN
+            dim_date AS dt ON ca.id_date = dt.id_date
+        WHERE
+            v.id_conducteur IS NOT NULL
+    `;
+        const params = [];
+
+        // --- FILTRES DYNAMIQUES ---
+        if (id_conducteur) {
+            sql += ` AND d.id_user = ?`;
+            params.push(id_conducteur);
+        }
+        if (dateDebut) {
+            sql += ` AND dt.jour >= ?`;
+            params.push(dateDebut);
+        }
+        if (dateFin) {
+            sql += ` AND dt.jour <= ?`;
+            params.push(dateFin);
+        }
+
+        sql += `
+        GROUP BY
+            d.id_user, d.nom
+        ORDER BY
+            total_cout DESC
+    `;
+
+        const [rows] = await db.query(sql, params);
+        return rows;
+    }
+
+
 }
 
 module.exports = new CarburantRepository();

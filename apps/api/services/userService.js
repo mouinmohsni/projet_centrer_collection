@@ -4,6 +4,7 @@ const recolteRepository = require('../repositories/RecolteRepository')
 const livraisonRepository = require('../repositories/LivraisonRepository')
 const FichePaieRepository = require("../repositories/FichePaieRepository");
 const CircuitUserRepository = require('../repositories/CircuitUserRepository');
+const CarburantRepository = require("../repositories/CarburantRepository");
 
 
 class UserService {
@@ -168,6 +169,27 @@ class UserService {
         }
         const circuits = await CircuitUserRepository.findCircuitsByUser(id_user);
        return circuits ;
+    }
+
+    /**
+     * Récupère l'historique des livraisons fourni au client,
+     * avec un filtre optionnel par période.
+     * @param {number} id_conducteur - L'ID du conducteur.
+     * @param {object} [filtres={}] - Un objet contenant les filtres optionnels.
+     * @param {string} [filtres.dateDebut] - La date de début (format 'YYYY-MM-DD').
+     * @param {string} [filtres.dateFin] - La date de fin (format 'YYYY-MM-DD').
+     * @returns {Promise<object[]>}
+     */
+    async getUsersOfCarburant(id_conducteur ,filtres={}) {
+        // Vérifier que le Carburant existe
+        const conducteur = await userRepository.findById(id_conducteur);
+        if (!conducteur) {
+            throw new NotFoundError(`Le conducteur avec l'ID ${id_conducteur} n'existe pas.`);
+        }
+        const { dateDebut, dateFin } = filtres;
+
+        // Récupérer les utilisateurs
+        return CarburantRepository.getConsumptionByDriver(id_conducteur,dateDebut,dateFin);
     }
 }
 

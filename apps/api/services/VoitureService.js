@@ -3,6 +3,7 @@ const NotFoundError = require('../util/NotFoundError')
 const BusinessLogicError = require('../util/BusinessLogicError')
 const Voiture = require('../models/Voiture')
 const userRepository = require('../repositories/UserRepository')
+const CarburantRepository = require("../repositories/CarburantRepository");
 
 
 
@@ -40,7 +41,6 @@ class VoitureService{
      * @param {number} idVoiture
      * @returns {Promise<Voiture>} le circuit demander
      */
-
     async getVoitureById(idVoiture) {
         const Voiture = await VoitureRepository.findById(idVoiture);
         if (!Voiture) {
@@ -56,8 +56,6 @@ class VoitureService{
     async getAllVoitures() {
         return VoitureRepository.getAll();
     }
-
-
 
     /**
      * modifier les informations d'une Voiture
@@ -147,7 +145,6 @@ class VoitureService{
      * @returns {Promise<Voiture>} La voiture mise à jour.
      */
 
-
     async unassignDriverFromVehicle(id_voiture,performingUserId) {
         // 1. Vérifier que la voiture existe
         const voiture = await VoitureRepository.findById(id_voiture);
@@ -161,5 +158,23 @@ class VoitureService{
         // 3. Retourner la voiture mise à jour
         return VoitureRepository.findById(id_voiture);
     }
+
+    /**
+     * Calcule le coût total du carburant pour une voiture, avec un filtre optionnel par période.
+     * @param {number} id_voiture - L'ID de la voiture.
+     * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
+     * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
+     * @returns {Promise<object>} Le coût total du carburant.
+     */
+    async getTotalCoutByVoiture(id_voiture, dateDebut, dateFin) {
+
+        const voiture = await VoitureRepository.findById(id_voiture)
+        if (!voiture) {
+            throw new NotFoundError(`La voiture avec l'ID ${id_voiture} n'a pas été trouvée.`);
+        }
+       return  CarburantRepository.getTotalCoutByVoiture(id_voiture,dateDebut,dateFin);
+
+    }
+
 }
 module.exports = new VoitureService();
