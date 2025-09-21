@@ -145,6 +145,16 @@ class UserRepository {
         // On mappe chaque ligne de résultat en une instance de la classe Voiture
         return rows.map(row => new Voiture(row));
     }
+
+    async findUserRoleById ( userId){
+        const [rows] = await db.query(
+            `SELECT u.*, r.libelle AS role FROM user AS u
+            JOIN collection_db.role r on u.id_role = r.id_role
+         WHERE id_user = ?`,
+            [userId]
+        )
+        return rows[0];
+    }
 }
 
 // On exporte une instance unique (Singleton)

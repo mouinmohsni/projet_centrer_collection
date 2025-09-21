@@ -49,15 +49,22 @@ class DimDateRepository {
 
     /**
      * 🔹 Recherche une date spécifique par jour, mois et année.
-     * @param {number} jour
-     * @param {number} mois
-     * @param {number} annee
+     * @param {string} jour
+     * @param {string} periode
      * @returns {Promise<DimDate|null>}
      */
-    async findByDayMonthYear(jour, mois, annee) {
+    async findIdByDateAndPeriod(jour,periode) {
         const [rows] = await db.execute(
-            'SELECT * FROM dim_date WHERE jour = ? AND mois = ? AND annee = ?',
-            [jour, mois, annee]
+            'SELECT * FROM dim_date WHERE jour = ? AND periode = ?',
+            [jour, periode]
+        );
+        return this.mapRowToModel(rows[0]);
+    }
+
+    async findByDay(jour) {
+        const [rows] = await db.execute(
+            'SELECT * FROM dim_date WHERE jour = ?',
+            [jour]
         );
         return this.mapRowToModel(rows[0]);
     }
