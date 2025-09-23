@@ -3,6 +3,7 @@ class Facture {
     /**
      * @param {object} data
      * @param {number} data.id_facture
+     * @param {string} data.nomFacture
      * @param {number} data.id_client
      * @param {number} data.id_date
      * @param {number} data.montant_total
@@ -13,11 +14,12 @@ class Facture {
      * @param {number} [data.updated_by]
      * @param {string|Date} [data.updated_at]
      */
-    constructor({ id_facture, id_client, id_date, montant_total, type, statut ,created_by, 
+    constructor({ id_facture,nomFacture, id_client, id_date, montant_total, type, statut ,created_by,
         created_at, 
         updated_by, 
         updated_at }) {
         this.id_facture = id_facture;
+        this.nomFacture = nomFacture
         this.id_client = id_client;
         this.id_date = id_date;
         this.montant_total = montant_total;

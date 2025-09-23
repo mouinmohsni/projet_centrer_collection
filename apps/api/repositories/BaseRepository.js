@@ -14,49 +14,6 @@ class BaseRepository {
     }
 
 
-    // Dans BaseRepository.js
-
-    // /**
-    //  * Crée une nouvelle ligne dans la table avec les données fournies.
-    //  * @param {object} data - Un objet où les clés sont les noms des colonnes et les valeurs sont les données à insérer.
-    //  * @returns {Promise<number>} - L'ID de la ligne nouvellement créée.
-    //  */
-    // async create(data) {
-    //     // 1. Obtenir la liste des colonnes à partir des clés de l'objet 'data'.
-    //     // C'est la partie la plus simple.
-    //     const columns = Object.keys(data);
-    //
-    //     // 2. Obtenir la liste des valeurs correspondantes.
-    //     // L'ordre est garanti d'être le même que celui des clés.
-    //     const values = Object.values(data);
-    //
-    //     // Si l'objet 'data' est vide, il n'y a rien à insérer.
-    //     if (columns.length === 0) {
-    //         throw new Error("Impossible de créer une ligne avec des données vides.");
-    //     }
-    //
-    //     // 3. Construire la liste des "placeholders" (?) pour la requête préparée.
-    //     // Pour chaque colonne, nous ajoutons un '?' à la liste.
-    //     // Ex: ['col1', 'col2'] => '?, ?'
-    //     const placeholders = columns.map(() => '?').join(', ');
-    //
-    //     // 4. Construire la liste des colonnes pour la requête SQL.
-    //     // Ex: ['col1', 'col2'] => 'col1, col2'
-    //     const columnNames = columns.join(', ');
-    //
-    //     // 5. Assembler la requête SQL finale.
-    //     const query = `INSERT INTO ${this.tableName} (${columnNames}) VALUES (${placeholders})`;
-    //
-    //     // 6. Exécuter la requête avec le tableau de valeurs.
-    //     // db.execute s'assurera que chaque '?' est remplacé de manière sécurisée par une valeur du tableau.
-    //     const [result] = await db.execute(query, values);
-    //
-    //     // 7. Renvoyer l'ID de l'enregistrement qui vient d'être créé.
-    //     return result.insertId;
-    // }
-
-
-
 
     /**
      * Met à jour dynamiquement une ligne par son ID.

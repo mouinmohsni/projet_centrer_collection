@@ -1,6 +1,13 @@
 const db = require('../models/db');
 const Facture = require("../models/Facture");
-class FactureRepository {
+const BaseRepository = require("./BaseRepository");
+class FactureRepository  extends BaseRepository{
+
+    constructor() {
+        super("facture", "id_facture")
+
+        this.updatableFields = ["id_client", "id_date", "montant_total", "type", "statut", "updated_by"];
+    }
 
 
     /**
@@ -16,15 +23,13 @@ class FactureRepository {
     /**
      * Crée une nouvelle Facture.
      * @param {object} data - Les données de la Facture.
-
+     * @param connection
      * @returns {Promise<number>} L'ID de la nouvelle Facture.
      */
-    async create(data) {
-        // On attend les deux champs du service
-        // const { id_client, id_date, montant_total = 0, type, statut = 'brouillon' } = data;
+    async create(data,connection = db) {
 
         const { id_client, id_date, montant_total, type, statut, created_by, updated_by } = data;
-        const [result] = await db.execute(
+        const [result] = await connection.query(
             `INSERT INTO facture (id_client, id_date, montant_total, type, statut, created_by, updated_by)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [id_client, id_date, montant_total, type, statut, created_by, updated_by]
@@ -36,7 +41,7 @@ class FactureRepository {
     /**
      * Récupère une Facture par son ID.
      * @param {number} id_facture
-     * @returns {Promise<FichePaie|null>}
+     * @returns {Promise<Facture|null>}
      */
 
     async findByIdDetail(id_facture) {
@@ -55,71 +60,68 @@ class FactureRepository {
      * @param {number} id_facture
      * @returns {Promise<Facture|null>}
      */
-    async findByI(id_facture) {
-        const [rows] = await db.execute(
-            `SELECT * FROM facture 
-                WHERE id_facture = ?`,
-            [id_facture]
-        );
-        return this.mapRowToModel(rows[0]);
+    async findById(id_facture) {
+        const row= super.findById_raw(id_facture)
+        return this.mapRowToModel(row);
     }
 
-    /**
-     * Met à jour une Facture.
-     * @param {number} id_facture - L'ID de la fiche à mettre à jour.
-     * @param {object} data - Les nouvelles données.
-     * @returns {Promise<boolean>} True si la mise à jour a réussi.
-     */
-    async update(id_facture, data) {
-        const updatableFields = [ "id_client", "id_date", "montant_total", "type", "statut", "updated_by"];
+    // /**
+    //  * Met à jour une Facture.
+    //  * @param {number} id_facture - L'ID de la fiche à mettre à jour.
+    //  * @param {object} data - Les nouvelles données.
+    //  * @returns {Promise<boolean>} True si la mise à jour a réussi.
+    //  */
+    // async update(id_facture, data) {
+    //     const updatableFields = [ "id_client", "id_date", "montant_total", "type", "statut", "updated_by"];
+    //
+    //     // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+    //     const dataToUpdate = {};
+    //     Object.keys(data).forEach(key => {
+    //         if (updatableFields.includes(key)) {
+    //             dataToUpdate[key] = data[key];
+    //         }
+    //     });
+    //
+    //     // 3. Construire la requête dynamiquement à partir des données filtrées.
+    //     const fields = Object.keys(dataToUpdate);
+    //     const values = Object.values(dataToUpdate);
+    //
+    //
+    //     if (fields.length === 0) {
+    //         // Le client n'a envoyé aucun champ modifiable.
+    //         return false;
+    //     }
+    //
+    //     const setClause = fields.map(field => `${field} = ?`).join(', ');
+    //     values.push(id_facture); // Ajouter l'ID pour la clause WHERE
+    //
+    //
+    //
+    //     const [result] = await db.execute(
+    //         `UPDATE facture SET ${setClause} WHERE id_facture = ?`,
+    //         values
+    //     );
+    //     return result.affectedRows > 0;
+    // }
 
-        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
-        const dataToUpdate = {};
-        Object.keys(data).forEach(key => {
-            if (updatableFields.includes(key)) {
-                dataToUpdate[key] = data[key];
-            }
-        });
-
-        // 3. Construire la requête dynamiquement à partir des données filtrées.
-        const fields = Object.keys(dataToUpdate);
-        const values = Object.values(dataToUpdate);
-
-
-        if (fields.length === 0) {
-            // Le client n'a envoyé aucun champ modifiable.
-            return false;
-        }
-
-        const setClause = fields.map(field => `${field} = ?`).join(', ');
-        values.push(id_facture); // Ajouter l'ID pour la clause WHERE
-
-
-
-        const [result] = await db.execute(
-            `UPDATE facture SET ${setClause} WHERE id_facture = ?`,
-            values
-        );
-        return result.affectedRows > 0;
-    }
-
-    /**
-     * Supprime une Facture.
-     * @param {number} id_facture
+    /** Surcharge de la méthode update pour utiliser la liste de champs prédéfinie.
+     * @param {number} id - L'ID de l'exécution.
+     * @param {object} data - Les données à mettre à jour.
+     * @param  {string[]} [allowedFields=null]
      * @returns {Promise<boolean>}
      */
-    async delete(id_facture) {
-        const [result] = await db.execute(
-            `DELETE FROM facture WHERE id_facture = ?`,
-            [id_facture]
-        );
-        return result.affectedRows > 0;
+    async update(id, data,allowedFields = null) {
+        // On appelle la méthode 'update' de la classe parente (BaseRepository)
+        // en lui passant la liste des champs autorisés.
+        return super.update(id, data, this.updatableFields);
     }
+
+
 
     /**
      * Récupère toutes les facture d'un client.
      * @param {number} id_client
-     * @returns {Promise<FichePaie[]>}
+     * @returns {Promise<Facture[]>}
      */
     async getByUser(id_client) {
         const [rows] = await db.execute(
@@ -127,6 +129,11 @@ class FactureRepository {
             [id_client]
         );
         return rows.map(row => this.mapRowToModel(row));
+    }
+
+    async getAll(){
+        const [rows] = super.getAll_raw()
+        return rows.map(this.mapRowToModel)
     }
 
 
@@ -142,6 +149,72 @@ class FactureRepository {
         );
         return rows[0]?.total || 0;
     }
+
+    /**
+     * Récupère toutes les factures d'un client.
+     * @param {Object} filters
+     * @returns {Promise<Facture[]>}
+     */
+
+    async getByFilter(filters = {}){
+
+        const { type, statut, id_client, id_date, date_debut, date_fin } = filters;
+
+        let query = `SELECT f.* FROM ${this.tableName} AS f`;
+        const conditions = [];
+        const params = [];
+
+
+        // Si un filtre de date par intervalle est présent, on doit joindre dim_date.
+        if (date_debut || date_fin) {
+            // IMPORTANT : Assurez-vous que les noms 'dim_date' et 'jour' sont corrects.
+            query += ` JOIN dim_date AS dd ON f.id_date = dd.id_date`;
+
+            if (date_debut) {
+                conditions.push('dd.jour >= ?');
+                params.push(date_debut);
+            }
+            if (date_fin) {
+                conditions.push('dd.jour <= ?');
+                params.push(date_fin);
+            }
+        }
+
+        if (type) {
+            conditions.push('type = ?');
+            params.push(type);
+        }
+
+        if (statut)  {
+            if (Array.isArray(statut)) {
+                const status = statut.map(() => '?').join(',');
+                conditions.push(`statut IN (${status})`);
+                params.push(...statut);
+            } else {
+                conditions.push('statut = ?');
+                params.push(statut);
+            }
+        }
+
+        if (id_client){
+            conditions.push('id_client = ?');
+            params.push(id_client);
+        }
+
+        if (id_date){
+            conditions.push('id_date = ?');
+            params.push(id_date);
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        const [rows] = await db.query(query, params);
+        return rows.map(row => this.mapRowToModel(row));
+
+
+    }
 }
 
-module.exports = FactureRepository ;
+module.exports = new FactureRepository() ;

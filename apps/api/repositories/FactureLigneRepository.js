@@ -1,8 +1,16 @@
 const db = require('../models/db');
 
 const FactureLigne = require('../models/FactureLigne');
+const BaseRepository = require("./BaseRepository");
 
-class FactureLigneRepository {
+class FactureLigneRepository  extends BaseRepository{
+
+    constructor() {
+        super("facture_ligne", "id_ligne")
+
+        this.updatableFields = ["id_facture", "id_produit", "quantite", "prix_unitaire", "montant", "updated_by"];
+    }
+
 
     /**
      * Transforme une ligne de la base de données en une instance de FactureLigne.
@@ -17,11 +25,12 @@ class FactureLigneRepository {
      * ➕ Crée une nouvelle FactureLigne.
      * Le montant_total sera souvent mis à jour par le service après ajout des lignes.
      * @param {object} data - Les données de la FactureLigne.
+     * @param connection
      * @returns {Promise<number>} L'ID de la nouvelle FactureLigne.
      */
-    async create(data) {
+    async create(data , connection = db) {
         const { id_facture, id_produit, quantite, prix_unitaire, created_by, updated_by} = data;
-        const [result] = await db.query(
+        const [result] = await connection.query(
             `INSERT INTO facture_ligne (id_facture, id_produit, quantite, prix_unitaire, created_by, updated_by) 
              VALUES (?, ?, ?, ?, ?,?)`,
             [id_facture, id_produit, quantite, prix_unitaire, created_by, updated_by]
@@ -40,6 +49,21 @@ class FactureLigneRepository {
             [id_ligne]
         );
         return this.mapRowToModel(rows[0]);
+    }
+
+    /**
+     * 🔍 Récupère une FactureLigne par son ID.
+     * @param {number} factureId
+     * @returns {Promise<Object|null>}
+     */
+    async findByFactureId(factureId){
+        const [rows] = await db.query(
+            `SELECT f.* , p.nom as produit FROM facture_ligne AS F
+         JOIN collection_db.produit p on F.id_produit = p.id_produit
+            WHERE id_facture = ?`,
+            [factureId]
+        );
+        return rows
     }
 
     /**
@@ -66,43 +90,16 @@ class FactureLigneRepository {
 
 
 
-    /**
-     * Met à jour une Facture.
-     * @param {number} id_ligne - L'ID de la fiche à mettre à jour.
-     * @param {object} data - Les nouvelles données.
-     * @returns {Promise<boolean>} True si la mise à jour a réussi.
-     */
-    async update(id_ligne, data) {
-        const updatableFields = [ 'id_ligne', 'id_produit', 'quantite', 'prix_unitaire', 'montant', 'updated_by'];
-
-        // 2. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
-        const dataToUpdate = {};
-        Object.keys(data).forEach(key => {
-            if (updatableFields.includes(key)) {
-                dataToUpdate[key] = data[key];
-            }
-        });
-
-        // 3. Construire la requête dynamiquement à partir des données filtrées.
-        const fields = Object.keys(dataToUpdate);
-        const values = Object.values(dataToUpdate);
-
-
-        if (fields.length === 0) {
-            // Le client n'a envoyé aucun champ modifiable.
-            return false;
-        }
-
-        const setClause = fields.map(field => `${field} = ?`).join(', ');
-        values.push(id_ligne); // Ajouter l'ID pour la clause WHERE
-
-
-
-        const [result] = await db.execute(
-            `UPDATE facture_ligne SET ${setClause} WHERE id_ligne = ?`,
-            values
-        );
-        return result.affectedRows > 0;
+        /** Surcharge de la méthode update pour utiliser la liste de champs prédéfinie.
+    * @param {number} id - L'ID de l'exécution.
+    * @param {object} data - Les données à mettre à jour.
+    * @param  {string[]} [allowedFields=null]
+    * @returns {Promise<boolean>}
+    */
+    async update(id, data,allowedFields = null) {
+        // On appelle la méthode 'update' de la classe parente (BaseRepository)
+        // en lui passant la liste des champs autorisés.
+        return super.update(id, data, this.updatableFields);
     }
 
 
@@ -114,6 +111,25 @@ class FactureLigneRepository {
     async delete(id_ligne) {
         const [result] = await db.query(`DELETE FROM facture_ligne WHERE id_ligne = ?`, [id_ligne]);
         return result.affectedRows > 0;
+    }
+
+    async findLigneWithFactureStatus(ligneId) {
+        const [rows] = await db.query(
+            `SELECT fl.*, f.statut AS statut_facture
+             FROM facture_ligne AS fl
+             JOIN facture AS f ON fl.id_facture = f.id_facture
+             WHERE fl.id_ligne = ?`,
+            [ligneId]
+        );
+        return rows[0] || null;
+    }
+
+    async deleteByFactureId(factureId, connection = db) {
+        const [result] = await connection.query(
+            `DELETE FROM ${this.tableName} WHERE id_facture = ?`,
+            [factureId]
+        );
+        return result.affectedRows;
     }
 
 

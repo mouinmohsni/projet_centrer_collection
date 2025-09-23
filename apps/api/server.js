@@ -15,6 +15,7 @@ const livraisonRoute = require('./routes/livraison.routes');
 const fichePaieId = require('./routes/FichePaieId.routes');
 const carburant = require('./routes/carburant.routes');
 const circuitExecution = require('./routes/circuitExecution.routes');
+const facture =  require('./routes/facture.routes');
 
 
 
@@ -67,6 +68,7 @@ app.use('/api/livraisons',livraisonRoute);
 app.use('/api/fichePaies',fichePaieId);
 app.use('/api/carburants',carburant);
 app.use('/api/circuitExecutions',circuitExecution)
+app.use('api/factures',facture)
 
 
 

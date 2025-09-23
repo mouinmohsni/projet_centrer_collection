@@ -82,24 +82,11 @@ class CircuitExecutionRepository extends BaseRepository{
     */
     
     async update(id, data,allowedFields = null) {
-        // On appelle la méthode 'update' de la classe parente (BaseRepository)
-        // en lui passant la liste des champs autorisés.
+
         return super.update(id, data, this.updatableFields);
     }
 
 
-    // /**
-    //  * ❌ Supprime une exécution.
-    //  * @param {number} id_execution
-    //  * @returns {Promise<boolean>} True si la suppression a réussi.
-    //  */
-    // async delete(id_execution) {
-    //     const [result] = await db.query(
-    //         `DELETE FROM circuit_execution WHERE id_execution = ?`,
-    //         [id_execution]
-    //     );
-    //     return result.affectedRows > 0;
-    // }
 
     /**
      * 🚛 Récupère les infos détaillées (avec jointures).
