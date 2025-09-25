@@ -41,6 +41,19 @@ class RoleRepository {
     }
 
     /**
+     * 🔍 Récupère un rôle par son libelle.
+     * @param {String} libelle
+     * @returns {Promise<Role|null>}
+     */
+    async findByLibelle(libelle) {
+        const [rows] = await db.execute(
+            `SELECT * FROM role WHERE libelle LIKE  ?`,
+            [libelle]
+        );
+        return this.mapRowToModel(rows[0]);
+    }
+
+    /**
      * 🔹 Récupère tous les rôles.
      * @returns {Promise<Role[]>}
      */

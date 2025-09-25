@@ -4,6 +4,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { protect } = require('./ middleware/authMiddleware');
+
 
 // Import des routes
 const circuitRoutes = require('./routes/circuit.routes')
@@ -16,6 +18,7 @@ const fichePaieId = require('./routes/FichePaieId.routes');
 const carburant = require('./routes/carburant.routes');
 const circuitExecution = require('./routes/circuitExecution.routes');
 const facture =  require('./routes/facture.routes');
+const user = require('./routes/user.routes');
 
 
 
@@ -57,7 +60,9 @@ app.use((req, res, next) => {
 app.get('/api/test', (req, res) => {
     res.send('Hello! Server is running!');
 });
+app.use('api/users',user);
 
+app.use(protect);
 // Montage des routes pour les circuits
 app.use('/api/circuits', circuitRoutes);
 app.use('/api/voitures',voitureRoutes);
@@ -67,8 +72,8 @@ app.use('/api/produits',produitRoute);
 app.use('/api/livraisons',livraisonRoute);
 app.use('/api/fichePaies',fichePaieId);
 app.use('/api/carburants',carburant);
-app.use('/api/circuitExecutions',circuitExecution)
-app.use('api/factures',facture)
+app.use('/api/circuitExecutions',circuitExecution);
+app.use('api/factures',facture);
 
 
 

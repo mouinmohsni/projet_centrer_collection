@@ -1,15 +1,205 @@
 const userRepository = require('../repositories/UserRepository');
 const NotFoundError = require('../util/NotFoundError');
+const BusinessLogicError = require('../util/BusinessLogicError');
+
 const recolteRepository = require('../repositories/RecolteRepository')
 const livraisonRepository = require('../repositories/LivraisonRepository')
 const FichePaieRepository = require("../repositories/FichePaieRepository");
 const CircuitUserRepository = require('../repositories/CircuitUserRepository');
 const CarburantRepository = require("../repositories/CarburantRepository");
-
+const bcrypt = require('bcrypt');
+const RoleRepository = require("../repositories/RoleRepository");
+const JWT_SECRET = process.env.JWT_SECRET
+const jwt = require('jsonwebtoken');
 
 class UserService {
 
-    // ... autres méthodes du service (getUserById, etc.) ...
+    /**
+     * creation d'un Role
+     * @param {object} dataFromController
+     * @param {number} performingUserId
+     * @returns {Promise<Role>} Le nouveau role.
+     */
+    async create(dataFromController,performingUserId){
+
+        const { nom, email, mot_de_passe, telephone, id_role } = dataFromController;
+        if (!nom || !mot_de_passe || !telephone || !id_role) {
+            throw new BusinessLogicError("Le nom, le mot de passe, le téléphone et le rôle sont requis.");
+        }
+        const existingUserByTel = await userRepository.findByTel(telephone);
+        if (existingUserByTel) {
+            throw new BusinessLogicError(`Le numéro de téléphone '${telephone}' est déjà utilisé.`);
+        }
+
+        const hashedPassword = await bcrypt.hash(mot_de_passe,10);
+
+
+        const allowedData = {
+            nom: dataFromController.nom,
+            email: dataFromController.email,
+            mot_de_passe: hashedPassword, // On utilise le mot de passe hashé
+            telephone: dataFromController.telephone,
+            adresse: dataFromController.adresse,
+            id_role: dataFromController.id_role,
+            longitude: dataFromController.longitude,
+            latitude: dataFromController.latitude,
+            created_by: performingUserId,
+            updated_by: performingUserId
+        };
+
+
+        const idRole = await userRepository.create(allowedData)
+        return userRepository.findById(idRole)
+
+    }
+
+    /**
+     * Authentifie un utilisateur avec son numéro de téléphone et son mot de passe.
+     * @param {object} credentials - Les informations d'identification.
+     * @param {number} credentials.telephone - Le numéro de téléphone de l'utilisateur.
+     * @param {string} credentials.mot_de_passe - Le mot de passe en clair de l'utilisateur.
+     * @returns {Promise<{token: string, user: User}>} Un objet contenant le JWT et les informations de l'utilisateur.
+     */
+    async login(credentials){
+        const { telephone, mot_de_passe } = credentials;
+
+        // --- Étape 1: Validation des entrées ---
+        if (!telephone || !mot_de_passe) {
+            throw new BusinessLogicError("Le numéro de téléphone et le mot de passe sont requis.");
+        }
+
+        // --- Étape 2: Trouver l'utilisateur ---
+        // On utilise findByTel qui retourne l'objet brut, y compris le mot de passe hashé.
+        const userFromDb = await userRepository.findByTel(telephone);
+
+        if (!userFromDb) {
+            // Erreur générique pour ne pas donner d'indices à un attaquant (ne pas dire "utilisateur non trouvé").
+            throw new BusinessLogicError("Numéro de téléphone ou mot de passe incorrect.");
+        }
+
+        // --- Étape 3: Comparer les mots de passe ---
+        // On utilise la version Promise de bcrypt.compare avec await.
+        const isPasswordMatch = await bcrypt.compare(mot_de_passe, userFromDb.mot_de_passe);
+
+        if (!isPasswordMatch) {
+            // Même erreur générique.
+            throw new BusinessLogicError("Numéro de téléphone ou mot de passe incorrect.");
+        }
+
+        // --- Étape 4: Générer le JSON Web Token (JWT) ---
+        // Le "payload" du token contient les informations que l'on veut embarquer.
+        const payload = {
+            id: userFromDb.id_user,
+            role: userFromDb.id_role // Embarquer le rôle est très utile pour la gestion des permissions.
+        };
+
+        // On signe le token avec notre clé secrète. Il expirera dans 30 jour.
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+
+        // --- Étape 5: Renvoyer le token et les informations de l'utilisateur ---
+        // On utilise mapRowToModel pour renvoyer un objet utilisateur propre (sans le hash).
+        const userToReturn = userRepository.mapRowToModel(userFromDb);
+
+        return {
+            token: token,
+            user: userToReturn
+        };
+    }
+
+    /**
+     * trouver un user par id
+     * @param {number} id_user
+     * @returns {Promise<object>} le Carburant demander
+     */
+
+    async getUserById(id_user) {
+        const User = await userRepository.findById(id_user);
+        if (!User) {
+            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+        }
+        return User;
+    }
+
+    /**
+     * modifier un utilisateur
+     * @param {number} id_user
+     * @param {Object} data
+     * @param {number} performingUserId
+     * @returns {Promise<{message: string}>}
+     */
+    async updateUser(id_user,data,performingUserId){
+
+        const modifiableFields = ['nom', 'email', 'telephone', 'adresse', 'mot_de_passe', 'role','longitude','latitude'];
+
+        const hasModifiableField = Object.keys(data).some(key => modifiableFields.includes(key));
+        if (!hasModifiableField) {
+            throw new BusinessLogicError("Aucune donnée modifiable n'a été fournie.");
+        }
+
+        const userExists = await userRepository.findById(id_user);
+        if (!userExists) {
+            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+        }
+
+        const dataToUpdate = { updated_by: performingUserId };
+
+        if (data.mot_de_passe) {
+            const saltRounds = 10;
+            dataToUpdate.mot_de_passe = await bcrypt.hash(data.mot_de_passe, saltRounds);
+        }
+
+        if (data.role) {
+            const newRole = await RoleRepository.findByLibelle(data.role);
+            if (!newRole) {
+                throw new NotFoundError(`Le rôle '${data.role}' n'a pas été trouvé.`);
+            }
+            dataToUpdate.id_role = newRole.id_role;
+        }
+
+        if (data.nom) dataToUpdate.nom = data.nom;
+        if (data.email) dataToUpdate.email = data.email;
+
+        if (data.telephone) {
+            const existingUser = await userRepository.findByTel(data.telephone);
+            if (existingUser && existingUser.id_user !== id_user) {
+                throw new BusinessLogicError(`Le numéro de téléphone '${data.telephone}' est déjà utilisé par un autre compte.`);
+            }
+            dataToUpdate.telephone = data.telephone;
+        }
+
+        if (data.adresse) dataToUpdate.adresse = data.adresse;
+        if (data.longitude) dataToUpdate.longitude = data.longitude;
+        if (data.latitude) dataToUpdate.latitude = data.latitude;
+
+        await userRepository.update(id_user, dataToUpdate);
+
+        return { message: "les information de l'utilisateur sont modifier  avec succès." };
+
+    }
+
+    /**
+     * recuperer tout les users
+     * @returns {Promise<User[]>} tableau de touts les users
+     */
+    async getAllUsers() {
+        return userRepository.getAll();
+    }
+
+    /**
+     * supprimer un user
+     * @param {number} id_user
+     * @return {Promise<{message: string}>}
+     */
+    async deleteUser (id_user){
+        const User = await userRepository.findById(id_user);
+        if (!User) {
+            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+        }
+
+        await  userRepository.delete(id_user)
+        return { message: "la suppression de l'utilisateur est effectuer  avec succès." };
+
+    }
 
     /**
      * Récupère la liste de tous les véhicules assignés à un utilisateur.
@@ -28,7 +218,6 @@ class UserService {
 
         return voitures;
     }
-
 
     /**
      * Récupère l'historique des récoltes collectées par un conducteur,
@@ -85,7 +274,6 @@ class UserService {
         return recoltes;
     }
 
-//***************************************
 
     /**
      * Récupère l'historique des livraisons fourni par un conducteur,

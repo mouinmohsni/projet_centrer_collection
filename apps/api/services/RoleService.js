@@ -31,10 +31,23 @@ class RoleService{
 
     /**
      * trouver un role par id
-     * @param {number} idRole
+     * @param {String} libelle
      * @returns {Promise<Role>} le role demander
      */
 
+    async getByLibelle (libelle){
+        const role = await RoleRepository.findByLibelle(libelle);
+        if (!role) {
+            throw new NotFoundError(`Le role avec l'ID ${libelle} n'a pas été trouvé.`);
+        }
+        return role;
+    }
+
+    /**
+     * trouver un role par id
+     * @param {number} idRole
+     * @returns {Promise<Role>} le role demander
+     */
     async getoneById(idRole) {
         const role = await RoleRepository.findById(idRole);
         if (!role) {

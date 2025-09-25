@@ -21,8 +21,8 @@ router.route('/:CircuitExecutionId')
 
 router.route('/:CircuitExecutionId/statuts')
     .put(circuitExecutionController.updateExecutionStatus)
-router.route('/filters')
-    .post(circuitExecutionController.updateExecutionStatus)
+router.route('/search')
+    .post(circuitExecutionController.findExecutions)
 
 
 module.exports = router;

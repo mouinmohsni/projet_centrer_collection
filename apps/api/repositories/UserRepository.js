@@ -41,7 +41,8 @@ class UserRepository {
      * @returns {Promise<User|null>}
      */
     async findById(id_user) {
-        const [rows] = await db.query(`SELECT * FROM user WHERE id_user = ?`, [id_user]);
+        const [rows] = await db.query(`SELECT u.*,r.libelle as rolle FROM user AS u
+                    JOIN collection_db.role r on u.id_role = r.id_role WHERE id_user = ?`, [id_user]);
         return this.mapRowToModel(rows[0]);
     }
 
@@ -52,8 +53,10 @@ class UserRepository {
      * @param {number} telephone
      * @returns {Promise<object|null>} L'enregistrement brut de la BDD.
      */
-    async findByEmail(telephone) {
-        const [rows] = await db.query(`SELECT * FROM user WHERE email = ?`, [telephone]);
+    async findByTel(telephone) {
+        const [rows] = await db.query(`SELECT u.*,r.libelle as rolle FROM user AS u
+                     JOIN collection_db.role r on u.id_role = r.id_role
+                     WHERE telephone = ?`, [telephone]);
         return rows[0] || null;
     }
 
@@ -72,22 +75,6 @@ class UserRepository {
      * @param {object} data - Les champs à mettre à jour.
      * @returns {Promise<boolean>}
      */
-    // async update(id_user, userData) {
-    //     // On ne met à jour que les champs fournis.
-    //     // C'est une approche plus flexible pour les mises à jour partielles.
-    //     const [currentUser] = await db.query(`SELECT * FROM user WHERE id_user = ?`, [id_user]);
-    //     if (!currentUser.length) return false;
-    //
-    //     const updatedData = { ...currentUser[0], ...userData };
-    //
-    //     const { nom, email, adresse, id_role, longitude, latitude } = updatedData;
-    //     const [result] = await db.query(
-    //         `UPDATE user SET nom = ?, email = ?, adresse = ?, id_role = ?, longitude = ?, latitude = ?
-    //          WHERE id_user = ?`,
-    //         [nom, email, adresse, id_role, longitude, latitude, id_user]
-    //     );
-    //     return result.affectedRows > 0;
-    // }
 
     async update(id, data) {
         const updatableFields = ['nom', 'email','mot_de_passe','telephone' ,'adresse', 'id_role', 'longitude', 'latitude','updated_by'];

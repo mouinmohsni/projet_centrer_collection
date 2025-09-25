@@ -105,7 +105,7 @@ class CircuitExecutionController{
 
     /**
     * @desc   trouver avec un filtre
-    * @route   post  /api/CircuitExecutions
+    * @route   post  /api/CircuitExecutions/search
     * @access  Private
     */
 
@@ -119,7 +119,7 @@ class CircuitExecutionController{
                                  CircuitExecutions: CircuitExecutions
                              }
                          });
-});
+    });
 
 
     }

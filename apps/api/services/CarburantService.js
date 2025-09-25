@@ -16,7 +16,6 @@ class CarburantService {
      * @returns {Promise<Carburant>} Le nouveau Carburant.
      */
     async createCarburant(data,performingUserId){
-        console.log(data)
         const allowedData ={
             id_Voiture : data.id_Voiture,
             id_date : data.id_date,
@@ -70,8 +69,8 @@ class CarburantService {
         if (!Carburant) {
             throw new NotFoundError(`Le Carburant avec l'ID ${id_Carburant} n'existe pas.`);
         }
-        const allowedData ={...data, updated_by :performingUserId
-        }
+        const allowedData ={...data, updated_by :performingUserId}
+
         await CarburantRepository.update(id_Carburant, allowedData);
 
         return { message: 'le Carburant est modifier avec succès.' };
