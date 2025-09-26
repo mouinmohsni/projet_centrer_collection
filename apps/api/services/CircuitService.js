@@ -1,9 +1,8 @@
 const userRepository = require('../repositories/UserRepository')
 const CircuitRepository = require('../repositories/CircuitRepository')
 const CircuitUserRepository  = require('../repositories/CircuitUserRepository')
-const Circuit = require('../models/Circuit');
 
-const NotFoundError = require('../util/NotFoundError')
+const AppError = require('../util/AppError')
 const BusinessLogicError = require('../util/BusinessLogicError')
 
 
@@ -38,14 +37,14 @@ class CircuitService {
     async getCircuitById(id_circuit) {
         const circuit = await CircuitRepository.findById(id_circuit);
         if (!circuit) {
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'a pas été trouvé.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'a pas été trouvé.`,404);
         }
         return circuit;
     }
 
     /**
-     * recuperer tout les circuits
-     * @returns {Promise<Circuit[]>} tableau de touts les circuits
+     * récupérer tous les circuits
+     * @returns {Promise<Circuit[]>} tableau de tous les circuits
      */
     async getAllCircuits() {
         return CircuitRepository.getAll();
@@ -69,13 +68,13 @@ class CircuitService {
         // 1. Vérifier que le circuit existe
         const circuit = await CircuitRepository.findById(circuitId);
         if (!circuit) {
-            throw new NotFoundError(`Le circuit avec l'ID ${allowedData.id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${allowedData.id_circuit} n'existe pas.`,404);
         }
 
         // 2. Vérifier que l'utilisateur existe
         const user = await userRepository.findById(userId);
         if (!user) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${userId} n'existe pas.`);
+            throw new AppError(`L'utilisateur avec l'ID ${userId} n'existe pas.`,404);
         }
 
         // 3. Vérifier si l'association existe déjà pour éviter les doublons
@@ -104,7 +103,7 @@ class CircuitService {
         const circuit = await CircuitRepository.findById(id_circuit);
 
         if (!circuit) {
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`,404);
         }
         const allowedData ={...data, updated_by :performingUserId
         }
@@ -126,12 +125,12 @@ class CircuitService {
     async removeUserFromCircuit(id_circuit, userId){
         const user = await userRepository.findById(userId)
         if(!user){
-            throw new NotFoundError(`L'utilisateur avec l'ID ${userId} n'existe pas.`);
+            throw new AppError(`L'utilisateur avec l'ID ${userId} n'existe pas.`,404);
         }
 
         const circuit = await CircuitRepository.findById(id_circuit)
         if(!circuit){
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`,404);
         }
 
         const associationExists = await CircuitUserRepository.findByCircuitAndUser(id_circuit, userId);
@@ -146,7 +145,7 @@ class CircuitService {
     }
 
     /**
-     * recuperer tout les utilisateur d'un circuit
+     * récupérer tous les utilisateurs d'un circuit
      * @param {number} id_circuit
      * @returns {Promise<User[]>}
      */
@@ -154,7 +153,7 @@ class CircuitService {
         // Vérifier que le circuit existe
         const circuit = await CircuitRepository.findById(id_circuit);
         if (!circuit) {
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`,404);
         }
 
         // Récupérer les utilisateurs
@@ -173,11 +172,11 @@ class CircuitService {
 
         const user = await userRepository.findById(new_id)
         if(!user){
-            throw new NotFoundError(`L'utilisateur avec l'ID ${new_id} n'existe pas.`);
+            throw new AppError(`L'utilisateur avec l'ID ${new_id} n'existe pas.`,404);
         }
         const circuit = await CircuitRepository.findById(id_circuit)
         if(!circuit){
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`,404);
         }
         const associationExists = await CircuitUserRepository.findByCircuitAndUser(id_circuit, userId);
         if (!associationExists) {
@@ -204,7 +203,7 @@ class CircuitService {
 
         const circuit = await CircuitRepository.findById(id_circuit)
         if(!circuit){
-            throw new NotFoundError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${id_circuit} n'existe pas.`,404);
         }
 
         await CircuitUserRepository.deleteAllAssociationsByCircuit(id_circuit); // (Méthode à créer dans le repo)

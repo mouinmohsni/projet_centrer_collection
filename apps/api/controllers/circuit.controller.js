@@ -59,7 +59,7 @@ class CircuitController{
     });
 
     /**
-     *@desc    recuperer tout les utilisateurs d'un circuit
+     *@desc    récupérer tout les utilisateurs d'un circuit
      *@route   Get /api/circuits/:circuitId/users
      *@access  Private
      */

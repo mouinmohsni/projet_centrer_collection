@@ -1,31 +1,30 @@
 const catchAsync = require('../util/catchAsync')
 const FactureService =require('../services/FacureService')
-const Facture = require('../models/Facture')
 
 
 class FacureController{
 
     /**
-     * @desc    Créer une nouvelle Facure
+     * @desc    Créer une nouvelle Facture
      * @route   POST /api/Facture
-     * @access  Private (à définir plus tard)
+     * @access  private
      */
-    createFacure = catchAsync(async (req, res, next) => {
+    createFacture = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;
-        const newFacure = await FactureService.createFacture(req.body,performingUserId);
+        const newFacture = await FactureService.createFacture(req.body,performingUserId);
         res.status(201).json({
             status: 'success',
             data: {
-                Facure: newFacure
+                Facture: newFacture
 
             }
         });
     });
 
     /**
-     * @desc    Récupérer tous les Facture
+     * @desc    Récupérer touts les Factures
      * @route   GET /api/Facture
-     * @access  Public
+     * @access  private
      */
     getAllFacture = catchAsync(async (req, res, next) => {
         const Facture = await FactureService.getAllFactures();
@@ -41,8 +40,8 @@ class FacureController{
     /**
      * @desc    Récupérer  les Factures par filtre
      * @route   GET /api/Facture
-     * @access  Public
-     */
+     * @access  private
+     * */
     getFactureByFilter = catchAsync(async (req, res, next) => {
         const Facture = await FactureService.getFactureByFilter(req.body);
         res.status(200).json({

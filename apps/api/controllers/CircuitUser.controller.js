@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const CircuitUserService =require('../services/CircuitUserService')
-const CircuitUser = require('../models/CircuitUser')
 const circuitService = require('../services/CircuitService')
 
 

@@ -15,7 +15,6 @@ class FichePaieRepository {
 
     /**
      * Crée une nouvelle fiche de paie.
-     * @param {object} data - Les données de la fiche de paie.
      * @param {number} data.id_user
      * @param {number} data.id_date
      * @param {number} data.salaire_base

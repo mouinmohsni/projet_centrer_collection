@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const ProduitService =require('../services/ProduitService')
-const Produit = require('../models/Produit')
 
 
 class ProduitController{
@@ -8,7 +7,7 @@ class ProduitController{
     /**
      * @desc    Créer une nouvelle Produit
      * @route   POST /api/produits
-     * @access  Private (à définir plus tard)
+     * @access  Private
      */
     createProduit = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;
@@ -25,8 +24,8 @@ class ProduitController{
     /**
      * @desc    Récupérer tous les Produits
      * @route   GET /api/produits
-     * @access  Public
-     */
+     * @access  Private
+     * */
     getAllProduits = catchAsync(async (req, res, next) => {
         const produits = await ProduitService.getAll();
         res.status(200).json({

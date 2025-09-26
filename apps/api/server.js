@@ -23,7 +23,7 @@ const user = require('./routes/user.routes');
 
 
 // Import des gestionnaires d'erreur
-const NotFoundError = require('./util/NotFoundError');
+const AppError = require('./util/AppError');
 
 
 
@@ -86,7 +86,7 @@ app.use('api/factures',facture);
 // 1. Gestion des routes non trouvées (404)
 // Doit être APRÈS toutes les routes valides.
 app.all(/.*/, (req, res, next) => {
-    next(new NotFoundError(`Impossible de trouver ${req.originalUrl} sur ce serveur.`));
+    next(new AppError(`Impossible de trouver ${req.originalUrl} sur ce serveur.`));
 });
 
 // 2. Gestionnaire d'erreurs global

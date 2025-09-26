@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const UserService =require('../services/userService')
-const User = require('../models/User')
 
 
 class UserController{
@@ -8,7 +7,7 @@ class UserController{
     /**
      * @desc    Créer une nouvelle user
      * @route   POST /api/users
-     * @access  Private (à définir plus tard)
+     * @access  Private
      */
     createUser = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user; // Suppose que le middleware d'auth est actif

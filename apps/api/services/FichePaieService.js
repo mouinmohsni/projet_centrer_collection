@@ -1,6 +1,5 @@
 const FichePaieRepository = require('../repositories/FichePaieRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
+const AppError = require('../util/AppError')
 
 
 
@@ -38,7 +37,7 @@ class FichePaieService{
 
         const fiche = await FichePaieRepository.findDetailById(ficheId);
         if (!fiche) {
-            throw new NotFoundError(`Le Fiche de Paie avec l'ID ${ficheId} n'a pas été trouvé.`);
+            throw new AppError(`Le Fiche de Paie avec l'ID ${ficheId} n'a pas été trouvé.`,404);
         }
         return fiche;
     }
@@ -46,7 +45,7 @@ class FichePaieService{
 
 
     // /**
-    //  * recuperer tout les Fiche de Paie
+    //  * récupérer tout les Fiche de Paie
     //  * @returns {Promise<Produit[]>} tableau de tout les Produit
     //  */
     // async getAll() {
@@ -66,7 +65,7 @@ class FichePaieService{
         const fichePaie = await FichePaieRepository.findById(ficheId);
 
         if (!fichePaie) {
-            throw new NotFoundError(`La Fiche de Paie avec l'ID ${ficheId} n'existe pas.`);
+            throw new AppError(`La Fiche de Paie avec l'ID ${ficheId} n'existe pas.`,404);
         }
 
         const dataForRepo={...data, updated_by:performingUserId}
@@ -86,7 +85,7 @@ class FichePaieService{
 
         const fichePaie = await FichePaieRepository.findDetailById(ficheId)
         if(!fichePaie){
-            throw new NotFoundError(`La Fiche de Paie avec l'ID ${ficheId} n'existe pas.`);
+            throw new AppError(`La Fiche de Paie avec l'ID ${ficheId} n'existe pas.`,404);
         }
 
         await FichePaieRepository.delete(ficheId)

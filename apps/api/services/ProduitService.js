@@ -1,7 +1,5 @@
 const produitRepository = require('../repositories/ProduitRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
-const Produit = require('../models/Produit')
+const AppError = require('../util/AppError')
 
 
 
@@ -38,13 +36,13 @@ class ProduitService{
     async getoneById(idProduit) {
         const Produit = await produitRepository.findById(idProduit);
         if (!Produit) {
-            throw new NotFoundError(`Le Produit avec l'ID ${idProduit} n'a pas été trouvé.`);
+            throw new AppError(`Le Produit avec l'ID ${idProduit} n'a pas été trouvé.`,404);
         }
         return Produit;
     }
 
     /**
-     * recuperer tout les Produits
+     * récupérer tout les Produits
      * @returns {Promise<Produit[]>} tableau de tout les Produit
      */
     async getAll() {
@@ -64,7 +62,7 @@ class ProduitService{
         const Produit = await produitRepository.findById(idProduit);
 
         if (!Produit) {
-            throw new NotFoundError(`Le Produit avec l'ID ${idProduit} n'existe pas.`);
+            throw new AppError(`Le Produit avec l'ID ${idProduit} n'existe pas.`,404);
         }
 
         const dataForRepo = {...data, updated_by:performingUserId}
@@ -84,7 +82,7 @@ class ProduitService{
 
         const Produit = await produitRepository.findById(idProduit)
         if(!Produit){
-            throw new NotFoundError(`Le circuit avec l'ID ${idProduit} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${idProduit} n'existe pas.`,404);
         }
 
         await produitRepository.delete(idProduit)

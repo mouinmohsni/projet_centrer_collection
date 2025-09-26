@@ -1,7 +1,5 @@
 const LivraisonRepository = require('../repositories/LivraisonRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
-const Livraison = require('../models/Livraison')
+const AppError = require('../util/AppError')
 
 
 
@@ -35,19 +33,19 @@ class LivraisonService{
     /**
      * trouver une Livraison par id
      * @param {number} idLivraison
-     * @returns {Promise<Livraison>} le Livraison demander
+     * @returns {Promise<Object>} le Livraison demandé
      */
 
     async getoneById(idLivraison) {
         const Livraison = await LivraisonRepository.findByIdDetail(idLivraison);
         if (!Livraison) {
-            throw new NotFoundError(`Le Livraison avec l'ID ${idLivraison} n'a pas été trouvé.`);
+            throw new AppError(`Le Livraison avec l'ID ${idLivraison} n'a pas été trouvé.`,404);
         }
         return Livraison;
     }
 
     // /**
-    //  * recuperer tout les Livraisons
+    //  * récupérer tout les Livraisons
     //  * @returns {Promise<Livraison[]>} tableau de tout les Livraison
     //  */
     // async getAll() {
@@ -67,7 +65,7 @@ class LivraisonService{
         const Livraison = await LivraisonRepository.findById(idLivraison);
 
         if (!Livraison) {
-            throw new NotFoundError(`La Livraison avec l'ID ${idLivraison} n'existe pas.`);
+            throw new AppError(`La Livraison avec l'ID ${idLivraison} n'existe pas.`,404);
         }
         const dataForRepo={...data, updated_by:performingUserId}
 
@@ -86,7 +84,7 @@ class LivraisonService{
 
         const Livraison = await LivraisonRepository.findById(idLivraison)
         if(!Livraison){
-            throw new NotFoundError(`La livraison avec l'ID ${idLivraison} n'existe pas.`);
+            throw new AppError(`La livraison avec l'ID ${idLivraison} n'existe pas.`,404);
         }
 
         await LivraisonRepository.delete(idLivraison)

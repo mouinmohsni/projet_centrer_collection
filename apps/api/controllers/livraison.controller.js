@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const LivraisonService =require('../services/LivraisonService')
-const Livraison = require('../models/Livraison')
 
 
 class LivraisonController{
@@ -8,7 +7,7 @@ class LivraisonController{
     /**
      * @desc    Créer une nouvelle Livraison
      * @route   POST /api/livraisons
-     * @access  Private (à définir plus tard)
+     * @access  Private
      */
     createLivraison = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;

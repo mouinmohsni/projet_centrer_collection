@@ -1,6 +1,4 @@
-const Facture = require('../models/Facture');
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
+const AppError = require('../util/AppError')
 const DimDateRepository = require("../repositories/DimDateRepository");
 FactureLigneRepository = require("../repositories/FactureLigneRepository")
 const db = require('../models/db');
@@ -36,6 +34,9 @@ class FactureService {
             const heureDebut = date.toTimeString().split(' ')[0];
             const periode = (heureDebut < '12:00:00') ? 'matin' : 'soir';
             const id_date_calcule = await DimDateRepository.findIdByDateAndPeriod(dateCalendaire, periode);
+            if (!data.nomFacture) {
+                throw new AppError("Le champ 'nomFacture' est requis.", 400);
+            }
 
             const factureData = {
                 nomFacture : data.nomFacture,
@@ -97,7 +98,7 @@ class FactureService {
         const factureDetails = await FactureRepository.findByIdDetail(id_Facture);
         if (!factureDetails) {
             // Si la facture n'existe pas, on s'arrête tout de suite.
-            throw new NotFoundError(`La facture avec l'ID ${id_Facture} n'existe pas.`);
+            throw new AppError(`La facture avec l'ID ${id_Facture} n'existe pas.`,404);
         }
 
         const lignes = await FactureLigneRepository.findByFactureId(id_Facture);
@@ -110,7 +111,7 @@ class FactureService {
     }
 
     /**
-     * recuperer touts les Factures
+     * récupérer touts les Factures
      * @returns {Promise<Facture[]>} tableau de touts les Factures
      */
     async getAllFactures() {
@@ -137,11 +138,11 @@ class FactureService {
             // --- Étape 1: Verrouiller et valider la facture ---
             const factureActuelle = await FactureRepository.findById(id_Facture);
             if (!factureActuelle) {
-                throw new NotFoundError(`La facture avec l'ID ${id_Facture} n'existe pas.`);
+                throw new AppError(`La facture avec l'ID ${id_Facture} n'existe pas.`,404);
             }
 
             if (factureActuelle.statut !== 'brouillon') {
-                throw new BusinessLogicError(`Impossible de modifier une facture qui n'est plus à l'état 'brouillon'.`);
+                throw new AppError(`Impossible de modifier une facture qui n'est plus à l'état 'brouillon'.`,409);
             }
 
             // --- Étape 2: Préparer les données pour la mise à jour de la facture principale ---
@@ -165,7 +166,7 @@ class FactureService {
                 const heure = nouvelleDate.toTimeString().split(' ')[0];
                 const periode = (heure < '12:00:00') ? 'matin' : 'soir';
                 const id_date_calcule = await DimDateRepository.findIdByDateAndPeriod(dateCalendaire, periode);
-                if (!id_date_calcule) throw new NotFoundError(`Période introuvable pour la date ${data.date}.`);
+                if (!id_date_calcule) throw new AppError(`Période introuvable pour la date ${data.date}.`,404);
                 factureDataToUpdate.id_date = id_date_calcule;
             }
 
@@ -198,7 +199,7 @@ class FactureService {
             factureDataToUpdate.montant_total = montantTotalFinal;
 
             // --- Étape 4: Mettre à jour la facture principale avec toutes les modifications ---
-            await FactureRepository.update(id_Facture, factureDataToUpdate, connection);
+            await FactureRepository.update(id_Facture, factureDataToUpdate);
 
             // --- Étape 5: Valider la transaction ---
             await connection.commit();
@@ -216,7 +217,7 @@ class FactureService {
 
 
     /**
-     * recuperer tout les utilisateur d'un Facture
+     * récupérer tout les utilisateur d'un Facture
      * @param {Object} filters
      * @returns {Promise<Facture[]>}
      */
@@ -245,7 +246,7 @@ class FactureService {
         }
 
         if (Facture.statut === 'payee') {
-            throw new BusinessLogicError("Impossible de supprimer une facture qui a déjà été payée.");
+            throw new AppError("Impossible de supprimer une facture qui a déjà été payée.");
         }
 
 

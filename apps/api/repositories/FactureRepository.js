@@ -28,11 +28,11 @@ class FactureRepository  extends BaseRepository{
      */
     async create(data,connection = db) {
 
-        const { id_client, id_date, montant_total, type, statut, created_by, updated_by } = data;
+        const { id_client,nomFacture, id_date, montant_total, type, statut, created_by, updated_by } = data;
         const [result] = await connection.query(
-            `INSERT INTO facture (id_client, id_date, montant_total, type, statut, created_by, updated_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id_client, id_date, montant_total, type, statut, created_by, updated_by]
+            `INSERT INTO facture (id_client, nomFacture, id_date, montant_total, type, statut, created_by, updated_by)
+             VALUES (?, ?,?, ?, ?, ?, ?, ?)`,
+            [id_client,nomFacture, id_date, montant_total, type, statut, created_by, updated_by]
         );
         return result.insertId;
     }
@@ -113,23 +113,23 @@ class FactureRepository  extends BaseRepository{
     async update(id, data,allowedFields = null) {
         // On appelle la méthode 'update' de la classe parente (BaseRepository)
         // en lui passant la liste des champs autorisés.
-        return super.update(id, data, this.updatableFields);
+        return super.updateConnexion(id, data, this.updatableFields);
     }
 
 
 
-    /**
-     * Récupère toutes les facture d'un client.
-     * @param {number} id_client
-     * @returns {Promise<Facture[]>}
-     */
-    async getByUser(id_client) {
-        const [rows] = await db.execute(
-            `SELECT * FROM facture WHERE id_client = ? ORDER BY id_date DESC`,
-            [id_client]
-        );
-        return rows.map(row => this.mapRowToModel(row));
-    }
+    // /**
+    //  * Récupère toutes les factures d'un client.
+    //  * @param {number} id_client
+    //  * @returns {Promise<Facture[]>}
+    //  */
+    // async getByUser(id_client) {
+    //     const [rows] = await db.execute(
+    //         `SELECT * FROM facture WHERE id_client = ? ORDER BY id_date DESC`,
+    //         [id_client]
+    //     );
+    //     return rows.map(row => this.mapRowToModel(row));
+    // }
 
     async getAll(){
         const [rows] = super.getAll_raw()
@@ -137,18 +137,18 @@ class FactureRepository  extends BaseRepository{
     }
 
 
-    /**
-     * 💰 Récupère le montant total pour un statut de facture donné.
-     * @param {string} statut
-     * @returns {Promise<number>}
-     */
-    async getTotalByStatut(statut) {
-        const [rows] = await db.query(
-            `SELECT SUM(montant_total) AS total FROM facture WHERE statut = ?`,
-            [statut]
-        );
-        return rows[0]?.total || 0;
-    }
+    // /**
+    //  * 💰 Récupère le montant total pour un statut de facture donné.
+    //  * @param {string} statut
+    //  * @returns {Promise<number>}
+    //  */
+    // async getTotalByStatut(statut) {
+    //     const [rows] = await db.query(
+    //         `SELECT SUM(montant_total) AS total FROM facture WHERE statut = ?`,
+    //         [statut]
+    //     );
+    //     return rows[0]?.total || 0;
+    // }
 
     /**
      * Récupère toutes les factures d'un client.
@@ -158,7 +158,7 @@ class FactureRepository  extends BaseRepository{
 
     async getByFilter(filters = {}){
 
-        const { type, statut, id_client, id_date, date_debut, date_fin } = filters;
+        const { type, statut,nomFacture, id_client, id_date, date_debut, date_fin } = filters;
 
         let query = `SELECT f.* FROM ${this.tableName} AS f`;
         const conditions = [];
@@ -183,6 +183,10 @@ class FactureRepository  extends BaseRepository{
         if (type) {
             conditions.push('type = ?');
             params.push(type);
+        }
+        if(nomFacture){
+            conditions.push('type LIKE ?');
+            params.push(nomFacture);
         }
 
         if (statut)  {

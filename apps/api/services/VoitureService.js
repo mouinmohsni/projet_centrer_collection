@@ -1,7 +1,5 @@
 const VoitureRepository = require('../repositories/VoitureRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
-const Voiture = require('../models/Voiture')
+const AppError = require('../util/AppError')
 const userRepository = require('../repositories/UserRepository')
 const CarburantRepository = require("../repositories/CarburantRepository");
 
@@ -37,21 +35,21 @@ class VoitureService{
     }
 
     /**
-     * trouver un Voiture par id
+     * trouver une Voiture par id
      * @param {number} idVoiture
      * @returns {Promise<Voiture>} le circuit demander
      */
     async getVoitureById(idVoiture) {
         const Voiture = await VoitureRepository.findById(idVoiture);
         if (!Voiture) {
-            throw new NotFoundError(`Le Voiture avec l'ID ${idVoiture} n'a pas été trouvé.`);
+            throw new AppError(`Le Voiture avec l'ID ${idVoiture} n'a pas été trouvé.`,404);
         }
         return Voiture;
     }
 
     /**
-     * recuperer tout les Voitures
-     * @returns {Promise<Voiture[]>} tableau de tout les Voitures
+     * récupérer toutes les Voitures
+     * @returns {Promise<Voiture[]>} tableau de toutes les Voitures
      */
     async getAllVoitures() {
         return VoitureRepository.getAll();
@@ -68,7 +66,7 @@ class VoitureService{
         const Voiture = await VoitureRepository.findById(idVoiture);
 
         if (!Voiture) {
-            throw new NotFoundError(`Le Voiture avec l'ID ${idVoiture} n'existe pas.`);
+            throw new AppError(`Le Voiture avec l'ID ${idVoiture} n'existe pas.`,404);
         }
         const dataForRepo={...data, updated_by:performingUserId}
         await VoitureRepository.update(idVoiture, dataForRepo);
@@ -86,7 +84,7 @@ class VoitureService{
 
         const Voiture = await VoitureRepository.findById(idVoiture)
         if(!Voiture){
-            throw new NotFoundError(`Le circuit avec l'ID ${idVoiture} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${idVoiture} n'existe pas.`,404);
         }
 
         await VoitureRepository.delete(idVoiture)
@@ -104,7 +102,7 @@ class VoitureService{
         const result  = await VoitureRepository.findWithDriver(idVoiture);
 
         if(!result ){
-            throw new NotFoundError(`La voiture avec l'ID ${idVoiture} n'existe pas.`);
+            throw new AppError(`La voiture avec l'ID ${idVoiture} n'existe pas.`,404);
         }
         return  result
     }
@@ -117,24 +115,18 @@ class VoitureService{
      * @returns {Promise<Voiture>} Le véhicule mis à jour.
      */
     async assignDriverToVehicle(id_Voiture, id_conducteur,performingUserId) {
-        // 1. Vérifier que le véhicule existe
+
         const Voiture = await VoitureRepository.findById(id_Voiture);
         if (!Voiture) {
-            throw new NotFoundError(`Le véhicule avec l'ID ${id_Voiture} n'a pas été trouvé.`);
+            throw new AppError(`Le véhicule avec l'ID ${id_Voiture} n'a pas été trouvé.`,404);
         }
 
-
-        // 2. Vérifier que le conducteur existe
         const conducteur = await userRepository.findById(id_conducteur);
         if (!conducteur) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_conducteur} n'a pas été trouvé.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_conducteur} n'a pas été trouvé.`,404);
         }
 
-        // 3. Appeler le repository pour faire la mise à jour simple
-        // On passe un objet contenant uniquement le champ à modifier.
-        const success = await VoitureRepository.assignUnassignDriverToVehicle(id_Voiture, { id_conducteur: id_conducteur , performingUserId:performingUserId });
-
-        // 4. Retourner le véhicule mis à jour pour confirmation
+        await VoitureRepository.assignUnassignDriverToVehicle(id_Voiture, { id_conducteur: id_conducteur , performingUserId:performingUserId });
         return VoitureRepository.findById(id_Voiture);
     }
 
@@ -149,7 +141,7 @@ class VoitureService{
         // 1. Vérifier que la voiture existe
         const voiture = await VoitureRepository.findById(id_voiture);
         if (!voiture) {
-            throw new NotFoundError(`La voiture avec l'ID ${id_voiture} n'a pas été trouvée.`);
+            throw new AppError(`La voiture avec l'ID ${id_voiture} n'a pas été trouvée.`,404);
         }
 
         // 2. Appeler le repository pour mettre le champ à NULL
@@ -170,7 +162,7 @@ class VoitureService{
 
         const voiture = await VoitureRepository.findById(id_voiture)
         if (!voiture) {
-            throw new NotFoundError(`La voiture avec l'ID ${id_voiture} n'a pas été trouvée.`);
+            throw new AppError(`La voiture avec l'ID ${id_voiture} n'a pas été trouvée.`,404);
         }
        return  CarburantRepository.getTotalCoutByVoiture(id_voiture,dateDebut,dateFin);
 

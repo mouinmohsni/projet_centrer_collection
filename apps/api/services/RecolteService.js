@@ -1,7 +1,6 @@
 const RecolteRepository = require('../repositories/RecolteRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
-const Recolte = require('../models/Recolte')
+const AppError = require('../util/AppError')
+
 
 
 
@@ -35,24 +34,24 @@ class RecolteService{
     /**
      * trouver un Recolte par id
      * @param {number} idRecolte
-     * @returns {Promise<Recolte>} le Recolte demander
+     * @returns {Promise<Object>} le Recolte demander
      */
 
     async getoneById(idRecolte) {
         const Recolte = await RecolteRepository.findByIdDetail(idRecolte);
         if (!Recolte) {
-            throw new NotFoundError(`Le Recolte avec l'ID ${idRecolte} n'a pas été trouvé.`);
+            throw new AppError(`Le Recolte avec l'ID ${idRecolte} n'a pas été trouvé.`,404);
         }
         return Recolte;
     }
 
-    /**
-     * recuperer tout les Recoltes
-     * @returns {Promise<Recolte[]>} tableau de tout les Recolte
-     */
-    async getAll() {
-        return RecolteRepository.getAll();
-    }
+    // /**
+    //  * récupérer tout les Recoltes
+    //  * @returns {Promise<Recolte[]>} tableau de tout les Recolte
+    //  */
+    // async getAll() {
+    //     return RecolteRepository.getAll();
+    // }
 
 
 
@@ -67,7 +66,7 @@ class RecolteService{
         const Recolte = await RecolteRepository.findById(idRecolte);
 
         if (!Recolte) {
-            throw new NotFoundError(`Le Recolte avec l'ID ${idRecolte} n'existe pas.`);
+            throw new AppError(`Le Recolte avec l'ID ${idRecolte} n'existe pas.`,404);
         }
         const dataForRepo={...data, updated_by:performingUserId}
 
@@ -86,7 +85,7 @@ class RecolteService{
 
         const Recolte = await RecolteRepository.findById(idRecolte)
         if(!Recolte){
-            throw new NotFoundError(`Le circuit avec l'ID ${idRecolte} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${idRecolte} n'existe pas.`,404);
         }
 
         await RecolteRepository.delete(idRecolte)

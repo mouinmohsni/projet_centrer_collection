@@ -1,9 +1,6 @@
-const userRepository = require('../repositories/UserRepository')
 const CarburantRepository = require('../repositories/CarburantRepository')
-const Carburant = require('../models/Carburant');
 
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
+const AppError = require('../util/AppError')
 
 
 class CarburantService {
@@ -39,13 +36,13 @@ class CarburantService {
     async getCarburantById(id_Carburant) {
         const Carburant = await CarburantRepository.getDetailById(id_Carburant);
         if (!Carburant) {
-            throw new NotFoundError(`Le Carburant avec l'ID ${id_Carburant} n'a pas été trouvé.`);
+            throw new AppError(`Le Carburant avec l'ID ${id_Carburant} n'a pas été trouvé.`,404);
         }
         return Carburant;
     }
 
     /**
-     * recuperer tout les Carburants
+     * récupérer tout les Carburants
      * @returns {Promise<Carburant[]>} tableau de touts les Carburants
      */
     async getAllCarburants() {
@@ -67,7 +64,7 @@ class CarburantService {
         const Carburant = await CarburantRepository.findById(id_Carburant);
 
         if (!Carburant) {
-            throw new NotFoundError(`Le Carburant avec l'ID ${id_Carburant} n'existe pas.`);
+            throw new AppError(`Le Carburant avec l'ID ${id_Carburant} n'existe pas.`,404);
         }
         const allowedData ={...data, updated_by :performingUserId}
 
@@ -88,7 +85,7 @@ class CarburantService {
 
         const Carburant = await CarburantRepository.findById(id_Carburant)
         if(!Carburant){
-            throw new NotFoundError(`Le Carburant avec l'ID ${id_Carburant} n'existe pas.`);
+            throw new AppError(`Le Carburant avec l'ID ${id_Carburant} n'existe pas.`,404);
         }
 
         await CarburantRepository.delete(id_Carburant)

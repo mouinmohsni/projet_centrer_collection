@@ -1,7 +1,6 @@
 const RoleRepository = require('../repositories/RoleRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
-const Role = require('../models/Role')
+const AppError = require('../util/AppError')
+
 
 
 
@@ -29,19 +28,19 @@ class RoleService{
 
     }
 
-    /**
-     * trouver un role par id
-     * @param {String} libelle
-     * @returns {Promise<Role>} le role demander
-     */
-
-    async getByLibelle (libelle){
-        const role = await RoleRepository.findByLibelle(libelle);
-        if (!role) {
-            throw new NotFoundError(`Le role avec l'ID ${libelle} n'a pas été trouvé.`);
-        }
-        return role;
-    }
+    // /**
+    //  * trouver un role par id
+    //  * @param {String} libelle
+    //  * @returns {Promise<Role>} le role demander
+    //  */
+    //
+    // async getByLibelle (libelle){
+    //     const role = await RoleRepository.findByLibelle(libelle);
+    //     if (!role) {
+    //         throw new AppError(`Le role avec l'ID ${libelle} n'a pas été trouvé.`,404);
+    //     }
+    //     return role;
+    // }
 
     /**
      * trouver un role par id
@@ -51,13 +50,13 @@ class RoleService{
     async getoneById(idRole) {
         const role = await RoleRepository.findById(idRole);
         if (!role) {
-            throw new NotFoundError(`Le role avec l'ID ${idRole} n'a pas été trouvé.`);
+            throw new AppError(`Le role avec l'ID ${idRole} n'a pas été trouvé.`,404);
         }
         return role;
     }
 
     /**
-     * recuperer tout les roles
+     * récupérer tout les roles
      * @returns {Promise<Role[]>} tableau de tout les role
      */
     async getAll() {
@@ -77,7 +76,7 @@ class RoleService{
         const role = await RoleRepository.findById(idRole);
 
         if (!role) {
-            throw new NotFoundError(`Le role avec l'ID ${idRole} n'existe pas.`);
+            throw new AppError(`Le role avec l'ID ${idRole} n'existe pas.`,404);
         }
         const dataForRepo={...data, updated_by:performingUserId}
         await RoleRepository.update(idRole, dataForRepo);
@@ -95,7 +94,7 @@ class RoleService{
 
         const role = await RoleRepository.findById(idRole)
         if(!role){
-            throw new NotFoundError(`Le circuit avec l'ID ${idRole} n'existe pas.`);
+            throw new AppError(`Le circuit avec l'ID ${idRole} n'existe pas.`,404);
         }
 
         await RoleRepository.delete(idRole)

@@ -1,5 +1,4 @@
 const CircuitExecutionRepository = require('../repositories/CircuitExecutionRepository')
-const CircuitExecution = require('../models/CircuitExecution');
 const CircuitRepository = require('../repositories/CircuitRepository');
 const VoitureRepository = require('../repositories/VoitureRepository');
 const UserRepository = require('../repositories/UserRepository')
@@ -7,8 +6,7 @@ const DimDateRepository = require('../repositories/DimDateRepository')
 
 
 
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
+const AppError = require('../util/AppError')
 
 
 class CircuitExecutionService {
@@ -28,14 +26,14 @@ class CircuitExecutionService {
         const { id_circuit, id_conducteur, id_voiture, date_debut_planifiee, date_fin_planifiee } = data;
 
         if (!id_circuit || !id_conducteur || !id_voiture || !date_debut_planifiee || !date_fin_planifiee) {
-            throw new BusinessLogicError("Les informations de circuit, conducteur, véhicule et les dates de début/fin sont requises.");
+            throw new AppError("Les informations de circuit, conducteur, véhicule et les dates de début/fin sont requises.",400);
         }
 
         const debut_N = new Date(date_debut_planifiee);
         const fin_N = new Date(date_fin_planifiee);
 
         if (debut_N >= fin_N) {
-            throw new BusinessLogicError("La date de début doit être antérieure à la date de fin.");
+            throw new AppError("La date de début doit être antérieure à la date de fin.",409);
         }
 
         // Logique pour trouver le bon id_date (matin/soir)
@@ -45,21 +43,21 @@ class CircuitExecutionService {
         const id_date_correct = await DimDateRepository.findIdByDateAndPeriod(dateCalendaire, periode);
 
         if (!id_date_correct) {
-            throw new NotFoundError(`Période introuvable pour la date ${dateCalendaire} (${periode}).`);
+            throw new AppError(`Période introuvable pour la date ${dateCalendaire} (${periode}).`,404);
         }
 
 
         // --- 2. VÉRIFICATION D'EXISTENCE ET DE RÔLE ---
 
         const conducteur = await UserRepository.findUserRoleById(id_conducteur);
-        if (!conducteur) throw new NotFoundError("Le conducteur spécifié n'existe pas.");
-        if (conducteur.role !== "Conducteur") throw new BusinessLogicError(`L'utilisateur ${conducteur.nom} n'est pas un conducteur.`);
+        if (!conducteur) throw new AppError("Le conducteur spécifié n'existe pas.",404);
+        if (conducteur.role !== "Conducteur") throw new AppError(`L'utilisateur ${conducteur.nom} n'est pas un conducteur.`,409);
 
         const voiture = await VoitureRepository.findById(id_voiture);
-        if (!voiture) throw new NotFoundError("Le véhicule spécifié n'existe pas.");
+        if (!voiture) throw new AppError("Le véhicule spécifié n'existe pas.",404);
 
         const circuit = await CircuitRepository.findById(id_circuit);
-        if (!circuit) throw new NotFoundError("Le circuit spécifié n'existe pas.");
+        if (!circuit) throw new AppError("Le circuit spécifié n'existe pas.",404);
 
 
         // --- 3. VALIDATION DE DISPONIBILITÉ (CONDUCTEUR ET VÉHICULE) ---
@@ -75,7 +73,7 @@ class CircuitExecutionService {
 
             if (id_conducteur === id_conducteur_E){
                 if (debut_N < fin_E && fin_N > debut_E) {
-                    throw new BusinessLogicError(`Conflit: Le conducteur est déjà assigné à une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`);
+                    throw new AppError(`Conflit: Le conducteur est déjà assigné à une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`,409);
                 }
 
             }
@@ -92,7 +90,7 @@ class CircuitExecutionService {
 
             if(id_voiture === id_voiture_E ){
                 if (debut_N < fin_E && fin_N > debut_E) {
-                    throw new BusinessLogicError(`Conflit: Le véhicule est déjà utilisé dans une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`);
+                    throw new AppError(`Conflit: Le véhicule est déjà utilisé dans une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`,409);
                 }
 
             }
@@ -135,14 +133,14 @@ class CircuitExecutionService {
     async getCircuitExecutionById(id_CircuitExecution) {
         const CircuitExecution = await CircuitExecutionRepository.getDetailById(id_CircuitExecution);
         if (!CircuitExecution) {
-            throw new NotFoundError(`Le CircuitExecution avec l'ID ${id_CircuitExecution} n'a pas été trouvé.`);
+            throw new AppError(`Le CircuitExecution avec l'ID ${id_CircuitExecution} n'a pas été trouvé.`,404);
         }
         return CircuitExecution;
     }
 
     /**
-     * recuperer tout les CircuitExecutions
-     * @returns {Promise<CircuitExecution[]>} tableau de touts les CircuitExecutions
+     * récupérer tous les CircuitExecutions
+     * @returns {Promise<CircuitExecution[]>} tableau de tous les CircuitExecutions
      */
     async getAllCircuitExecutions() {
         return CircuitExecutionRepository.getAll();
@@ -158,24 +156,24 @@ class CircuitExecutionService {
      */
     async updateCircuitExecution(executionId, dataToUpdate, performingUserId) {
 
-        // --- Étape 1: Vérifier l'existence et le statut de la tournée ---
+        // --- Étape 1 : Vérifier l'existence et le statut de la tournée ---
 
         const executionActuelle = await CircuitExecutionRepository.findById(executionId);
         if (!executionActuelle) {
-            throw new NotFoundError(`L'exécution de circuit avec l'ID ${executionId} n'existe pas.`);
+            throw new AppError(`L'exécution de circuit avec l'ID ${executionId} n'existe pas.`,404);
         }
 
         // Règle métier : Un planificateur ne peut modifier qu'une tournée qui est au statut 'planifiee'.
         if (executionActuelle.statut !== 'planifiee') {
-            throw new BusinessLogicError(`Impossible de modifier une tournée qui n'est plus au statut 'planifiée'. Statut actuel : '${executionActuelle.statut}'.`);
+            throw new AppError(`Impossible de modifier une tournée qui n'est plus au statut 'planifiée'. Statut actuel : '${executionActuelle.statut}'.`,409);
         }
 
         // Règle de sécurité : Interdire le changement de statut via cette méthode.
         if (dataToUpdate.statut) {
-            throw new BusinessLogicError("Le changement de statut doit se faire via la méthode dédiée (démarrer/terminer la tournée).");
+            throw new AppError("Le changement de statut doit se faire via la méthode dédiée (démarrer/terminer la tournée).",404);
         }
 
-        // --- Étape 2: Préparer les données finales et valider les changements ---
+        // --- Étape 2 : Préparer les données finales et valider les changements ---
 
         // On fusionne les données actuelles avec les modifications demandées pour avoir l'état final.
         const dataFinal = { ...executionActuelle, ...dataToUpdate };
@@ -185,14 +183,14 @@ class CircuitExecutionService {
         // A. Le conducteur a-t-il changé ? Si oui, on valide le nouveau.
         if (dataToUpdate.id_conducteur && dataToUpdate.id_conducteur !== executionActuelle.id_conducteur) {
             const nouveauConducteur = await UserRepository.findUserRoleById(dataToUpdate.id_conducteur);
-            if (!nouveauConducteur) throw new NotFoundError(`Le nouveau conducteur avec l'ID ${dataToUpdate.id_conducteur} n'existe pas.`);
-            if (nouveauConducteur.role !== "Conducteur") throw new BusinessLogicError(`L'utilisateur ${nouveauConducteur.nom} n'est pas un conducteur.`);
+            if (!nouveauConducteur) throw new AppError(`Le nouveau conducteur avec l'ID ${dataToUpdate.id_conducteur} n'existe pas.`,404);
+            if (nouveauConducteur.role !== "Conducteur") throw new AppError(`L'utilisateur ${nouveauConducteur.nom} n'est pas un conducteur.`,409);
         }
 
         // B. Le véhicule a-t-il changé ? Si oui, on valide le nouveau.
         if (dataToUpdate.id_voiture && dataToUpdate.id_voiture !== executionActuelle.id_Voiture) {
             const nouvelleVoiture = await VoitureRepository.findById(dataToUpdate.id_voiture);
-            if (!nouvelleVoiture) throw new NotFoundError(`Le nouveau véhicule avec l'ID ${dataToUpdate.id_voiture} n'existe pas.`);
+            if (!nouvelleVoiture) throw new AppError(`Le nouveau véhicule avec l'ID ${dataToUpdate.id_voiture} n'existe pas.`,404);
         }
 
         // C. Les horaires ont-ils changé ? Si oui, on valide les nouvelles dates et on recalcule l'id_date.
@@ -201,7 +199,7 @@ class CircuitExecutionService {
             const fin_N = new Date(dataFinal.date_fin_planifiee);
 
             if (isNaN(debut_N.getTime()) || isNaN(fin_N.getTime()) || debut_N >= fin_N) {
-                throw new BusinessLogicError("Les dates de début/fin sont invalides ou la date de début n'est pas antérieure à la date de fin.");
+                throw new AppError("Les dates de début/fin sont invalides ou la date de début n'est pas antérieure à la date de fin.",409);
             }
 
             const dateCalendaire = debut_N.toISOString().split('T')[0];
@@ -209,11 +207,11 @@ class CircuitExecutionService {
             const periode = (heureDebut < '12:00:00') ? 'matin' : 'soir';
             const id_date_calcule = await DimDateRepository.findIdByDateAndPeriod(dateCalendaire, periode);
 
-            if (!id_date_calcule) throw new NotFoundError(`Période introuvable pour la date ${dateCalendaire} (${periode}).`);
+            if (!id_date_calcule) throw new AppError(`Période introuvable pour la date ${dateCalendaire} (${periode}).`,404);
             id_date_final = id_date_calcule.id_date;
         }
 
-        // --- Étape 3: Validation de disponibilité (la plus importante) ---
+        // --- Étape 3 : Validation de disponibilité (la plus importante) ---
         // On utilise les données finales (dataFinal) pour cette validation.
 
         const debut_final = new Date(dataFinal.date_debut_planifiee);
@@ -229,7 +227,7 @@ class CircuitExecutionService {
             const debut_E = new Date(tournee.heure_debut_planifiee);
             const fin_E = new Date(tournee.heure_fin_planifiee);
             if (debut_final < fin_E && fin_final > debut_E) {
-                throw new BusinessLogicError(`Conflit: Le conducteur est déjà assigné à une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`);
+                throw new AppError(`Conflit: Le conducteur est déjà assigné à une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`,409);
             }
         }
 
@@ -240,14 +238,14 @@ class CircuitExecutionService {
             excludeId: executionId // On exclut la tournée actuelle de la vérification !
         });
         for (const tournee of tourneesVoiture) {
-            const debut_E = new Date(tournee.date_debut_planifiee);
-            const fin_E = new Date(tournee.date_fin_planifiee);
+            const debut_E = new Date(tournee.heure_debut_planifiee);
+            const fin_E = new Date(tournee.heure_fin_planifiee);
             if (debut_final < fin_E && fin_final > debut_E) {
-                throw new BusinessLogicError(`Conflit: Le véhicule est déjà utilisé dans une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`);
+                throw new AppError(`Conflit: Le véhicule est déjà utilisé dans une tournée de ${debut_E.toLocaleTimeString()} à ${fin_E.toLocaleTimeString()}.`,409);
             }
         }
 
-        // --- Étape 4: Appliquer la mise à jour ---
+        // --- Étape 4 : Appliquer la mise à jour ---
 
         // On ne passe que les champs modifiés au repository, plus l'ID de l'updater et le nouvel id_date si calculé.
         const dataForRepo = { ...dataToUpdate, updated_by: performingUserId, id_date: id_date_final };
@@ -255,9 +253,9 @@ class CircuitExecutionService {
         const success = await CircuitExecutionRepository.update(executionId, dataForRepo);
 
         if (!success) {
-            throw new BusinessLogicError("La mise à jour de l'exécution de circuit a échoué (aucune modification détectée ou erreur interne).");
+            throw new AppError("La mise à jour de l'exécution de circuit a échoué (aucune modification détectée ou erreur interne).",404);
         }
-        // --- Étape 5: Renvoyer l'objet mis à jour ---
+        // --- Étape 5 : Renvoyer l'objet mis à jour ---
 
         return { message: 'le CircuitExecution est modifier avec succès.' };
         
@@ -267,15 +265,15 @@ class CircuitExecutionService {
 
     /**
      * Met à jour le statut d'une exécution de circuit.
-     * Gère les transitions d'état autorisées (ex: planifiée -> en_cours -> terminee).
+     * Gère les transitions d'état autorisées (ex : planifiée → en_cours → terminée).
      * @param {number} executionId - L'ID de l'exécution à mettre à jour.
-     * @param {object} data - Le nouveau statut souhaité ('en_cours', 'terminee', 'annulee').
+     * @param {object} data - Le nouveau statut souhaité ('en_cours', 'terminée', 'annulée').
      * @param {number} performingUserId - L'ID de l'utilisateur (chauffeur) qui effectue l'action.
      */
     async updateExecutionStatus(executionId, data, performingUserId) {
         const executionActuelle = await CircuitExecutionRepository.findById(executionId);
         if (!executionActuelle) {
-            throw new NotFoundError(`L'exécution de circuit avec l'ID ${executionId} n'existe pas.`);
+            throw new AppError(`L'exécution de circuit avec l'ID ${executionId} n'existe pas.`,404);
         }
 
         const statutActuel = executionActuelle.statut;
@@ -286,7 +284,7 @@ class CircuitExecutionService {
         switch (nouveauStatut) {
             case 'en_cours':
                 if (statutActuel !== 'planifiee') {
-                    throw new BusinessLogicError(`Impossible de démarrer une tournée qui n'est pas au statut 'planifiée'. Statut actuel : ${statutActuel}.`);
+                    throw new AppError(`Impossible de démarrer une tournée qui n'est pas au statut 'planifiée'. Statut actuel : ${statutActuel}.`,409);
                 }
                 // On enregistre l'heure de début réelle
                 dataToUpdate.date_debut_reelle = new Date();
@@ -294,32 +292,32 @@ class CircuitExecutionService {
 
             case 'terminee':
                 if (statutActuel !== 'en_cours') {
-                    throw new BusinessLogicError(`Impossible de terminer une tournée qui n'est pas 'en cours'. Statut actuel : ${statutActuel}.`);
+                    throw new AppError(`Impossible de terminer une tournée qui n'est pas 'en cours'. Statut actuel : ${statutActuel}.`,409);
                 }
                 // On enregistre l'heure de fin réelle et les kilomètres
                 dataToUpdate.date_fin_reelle = new Date();
                 if (data.km_parcouru === undefined) {
-                    throw new BusinessLogicError("Le kilométrage final est requis pour terminer la tournée.");
+                    throw new AppError("Le kilométrage final est requis pour terminer la tournée.",400);
                 }
                 dataToUpdate.km_parcouru = data.km_parcouru;
                 break;
 
             case 'annulee':
                 if (statutActuel === 'terminee') {
-                    throw new BusinessLogicError("Impossible d'annuler une tournée déjà terminée.");
+                    throw new AppError("Impossible d'annuler une tournée déjà terminée.",409);
                 }
                 // On peut annuler une tournée planifiée ou en cours.
                 break;
 
             default:
-                throw new BusinessLogicError(`Le statut '${nouveauStatut}' est invalide.`);
+                throw new AppError(`Le statut '${nouveauStatut}' est invalide.`,404);
         }
 
         // Si toutes les règles sont respectées, on met à jour.
         const success= await CircuitExecutionRepository.update(executionId, dataToUpdate);
         if (!success) {
             // Cela peut arriver si l'ID n'existe plus (race condition) ou si aucune donnée n'a réellement changé.
-            throw new BusinessLogicError("La mise à jour de l'exécution de circuit a échoué.");
+            throw new AppError("La mise à jour de l'exécution de circuit a échoué.",404);
         }
 
         return { message: 'le CircuitExecution est modifier avec succès.' };
@@ -336,7 +334,7 @@ class CircuitExecutionService {
 
         const CircuitExecution = await CircuitExecutionRepository.findById(id_CircuitExecution)
         if(!CircuitExecution){
-            throw new NotFoundError(`Le CircuitExecution avec l'ID ${id_CircuitExecution} n'existe pas.`);
+            throw new AppError(`Le CircuitExecution avec l'ID ${id_CircuitExecution} n'existe pas.`,404);
         }
 
         await CircuitExecutionRepository.deleteById(id_CircuitExecution)
@@ -358,7 +356,7 @@ class CircuitExecutionService {
         const filters = {};
 
         // On construit l'objet de filtres à partir des paramètres de recherche.
-        // Exemple : searchParams pourrait être { conducteurId: 12, statut: 'planifiee' }
+        // Exemple : searchParams pourrait être {conducteurId : 12, statut : 'planifiée'}
 
         if (searchParams.conducteurId) {
             filters.id_conducteur = searchParams.conducteurId;
@@ -379,9 +377,8 @@ class CircuitExecutionService {
             filters.id_date = date.id_date;
         }
 
-        const circuitExecutions = await CircuitExecutionRepository.find(filters);
 
-        return circuitExecutions;
+        return await CircuitExecutionRepository.find(filters);
     }
 
 }

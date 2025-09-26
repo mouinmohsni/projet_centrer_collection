@@ -93,6 +93,51 @@ class BaseRepository {
         const [rows] = await db.query(`SELECT * FROM ${this.tableName}`);
         return rows;
     }
+
+    /**
+     * Met à jour dynamiquement une ligne par son ID.
+     * @param {number} id - La valeur de la clé primaire de la ligne à mettre à jour.
+     * @param {object} data - Les nouvelles données.
+     * @param {string[]} updatableField - La liste des champs qui ont le droit d'être modifiés.
+     * @returns {Promise<boolean>} True si la mise à jour a réussi.
+     */
+    async updateConnexion(id, data, updatableField) {
+        const Connexion=db;
+        if (!updatableField || updatableField.length === 0) {
+            throw new Error("La liste des champs modifiables ('updatableFields') est requise pour la mise à jour.");
+        }
+
+        // 1. Filtrer l'objet 'data' pour ne garder que les champs autorisés.
+        const dataToUpdate = {};
+        Object.keys(data).forEach(key => {
+            if (updatableField.includes(key)) {
+                dataToUpdate[key] = data[key];
+            }
+        });
+
+        const fields = Object.keys(dataToUpdate);
+        const values = Object.values(dataToUpdate);
+
+        // Si aucune donnée valide n'a été fournie, on ne fait rien.
+        if (fields.length === 0) {
+            console.warn("Aucun champ valide à mettre à jour.");
+            return false;
+        }
+
+        // 2. Construire la clause SET dynamiquement.
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+
+        // 3. Ajouter l'ID à la fin du tableau de valeurs pour la clause WHERE.
+        values.push(id);
+
+        // 4. Exécuter la requête.
+        const [result] = await Connexion.execute(
+            `UPDATE ${this.tableName} SET ${setClause} WHERE ${this.primaryKey} = ?`,
+            values
+        );
+
+        return result.affectedRows > 0;
+    }
 }
 
 module.exports = BaseRepository;

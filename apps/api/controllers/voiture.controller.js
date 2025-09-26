@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const VoitureService =require('../services/VoitureService')
-const circuitService = require("../services/CircuitService");
 
 
 class VoitureController{
@@ -8,7 +7,7 @@ class VoitureController{
     /**
      * @desc    Créer une nouvelle voiture
      * @route   POST /api/voitures
-     * @access  Private (à définir plus tard)
+     * @access  Private
      */
     createVoiture = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;
@@ -23,7 +22,7 @@ class VoitureController{
     });
 
     /**
-     * @desc    Récupérer tous les voitures
+     * @desc    Récupérer toutes les voitures
      * @route   GET /api/voitures
      * @access  Public
      */
@@ -77,7 +76,7 @@ class VoitureController{
 
     /**
      * @desc    supprimer une voiture
-     * @route   DELETE  /api/voitures/:voitureId
+     * @route   DELETE /api/voitures/:voitureId
      * @access  Private
      */
     deleteVoiture = catchAsync(async (req,res,next)=> {

@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const RoleService =require('../services/RoleService')
-const Role = require('../models/Role')
 
 
 class RoleController{
@@ -8,7 +7,7 @@ class RoleController{
     /**
      * @desc    Créer une nouvelle role
      * @route   POST /api/roles
-     * @access  Private (à définir plus tard)
+     * @access  Private
      */
     createRole = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;
@@ -25,8 +24,8 @@ class RoleController{
     /**
      * @desc    Récupérer tous les roles
      * @route   GET /api/Roles
-     * @access  Public
-     */
+     * @access  Private
+     * */
     getAllRoles = catchAsync(async (req, res, next) => {
         const roles = await RoleService.getAll();
         res.status(200).json({

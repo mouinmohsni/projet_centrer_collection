@@ -166,15 +166,6 @@ class RecolteRepository {
      * @param {object} data - Les données à mettre à jour (ex: { quantite: 150 }).
      * @returns {Promise<boolean>} True si la mise à jour a réussi.
      */
-    // async update(id_recolte, data) {
-    //     // Pour l'instant, on ne met à jour que la quantité, mais on pourrait étendre
-    //     const { quantite } = data;
-    //     const [result] = await db.execute(
-    //         `UPDATE recolte SET quantite = ? WHERE id_recolte = ?`,
-    //         [quantite, id_recolte]
-    //     );
-    //     return result.affectedRows > 0;
-    // }
 
     async update(id, data) {
         const updatableFields = ['id_producteur', 'id_conducteur', 'id_produit', 'id_date', 'quantite', 'updated_by']

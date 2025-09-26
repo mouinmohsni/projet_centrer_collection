@@ -1,14 +1,13 @@
 const catchAsync = require('../util/catchAsync')
 const RecolteService =require('../services/RecolteService')
-const Recolte = require('../models/Recolte')
 
 
 class RecolteController{
 
     /**
-     * @desc    Créer une nouvelle Recolte
-     * @route   POST /api/Recoltes
-     * @access  Private (à définir plus tard)
+     * @desc    Créer une nouvelle recolte
+     * @route   POST /api/recoltes
+     * @access  Private
      */
     createRecolte = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;

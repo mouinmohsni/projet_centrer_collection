@@ -1,6 +1,5 @@
 const CircuitUserRepository = require('../repositories/CircuitUserRepository')
-const NotFoundError = require('../util/NotFoundError')
-const BusinessLogicError = require('../util/BusinessLogicError')
+const AppError = require('../util/AppError')
 
 
 
@@ -17,7 +16,7 @@ class CircuitUserService{
 
         const circuitUser = await CircuitUserRepository.findDetailsById(cuID);
         if (!circuitUser) {
-            throw new NotFoundError(`l'association circuitUser avec l'id ${cuID} n'a pas été trouvé.`);
+            throw new AppError(`l'association circuitUser avec l'id ${cuID} n'a pas été trouvé.`,404);
         }
         return circuitUser;
     }
@@ -31,7 +30,7 @@ class CircuitUserService{
 
         const CircuitUser = await CircuitUserRepository.findById(cuID)
         if(!CircuitUser){
-            throw new NotFoundError(`La Fiche de Paie avec l'ID ${cuID} n'existe pas.`);
+            throw new AppError(`La Fiche de Paie avec l'ID ${cuID}  n'existe pas.`,404);
         }
 
         await CircuitUserRepository.delete(cuID)

@@ -1,6 +1,5 @@
 const userRepository = require('../repositories/UserRepository');
-const NotFoundError = require('../util/NotFoundError');
-const BusinessLogicError = require('../util/BusinessLogicError');
+const AppError = require('../util/AppError');
 
 const recolteRepository = require('../repositories/RecolteRepository')
 const livraisonRepository = require('../repositories/LivraisonRepository')
@@ -22,13 +21,13 @@ class UserService {
      */
     async create(dataFromController,performingUserId){
 
-        const { nom, email, mot_de_passe, telephone, id_role } = dataFromController;
+        const { nom, mot_de_passe, telephone, id_role } = dataFromController;
         if (!nom || !mot_de_passe || !telephone || !id_role) {
-            throw new BusinessLogicError("Le nom, le mot de passe, le téléphone et le rôle sont requis.");
+            throw new AppError("Le nom, le mot de passe, le téléphone et le rôle sont requis.",400);
         }
         const existingUserByTel = await userRepository.findByTel(telephone);
         if (existingUserByTel) {
-            throw new BusinessLogicError(`Le numéro de téléphone '${telephone}' est déjà utilisé.`);
+            throw new AppError(`Le numéro de téléphone '${telephone}' est déjà utilisé.`,409);
         }
 
         const hashedPassword = await bcrypt.hash(mot_de_passe,10);
@@ -65,7 +64,7 @@ class UserService {
 
         // --- Étape 1: Validation des entrées ---
         if (!telephone || !mot_de_passe) {
-            throw new BusinessLogicError("Le numéro de téléphone et le mot de passe sont requis.");
+            throw new AppError("Le numéro de téléphone et le mot de passe sont requis.",400);
         }
 
         // --- Étape 2: Trouver l'utilisateur ---
@@ -74,7 +73,7 @@ class UserService {
 
         if (!userFromDb) {
             // Erreur générique pour ne pas donner d'indices à un attaquant (ne pas dire "utilisateur non trouvé").
-            throw new BusinessLogicError("Numéro de téléphone ou mot de passe incorrect.");
+            throw new AppError("Numéro de téléphone ou mot de passe incorrect.",409);
         }
 
         // --- Étape 3: Comparer les mots de passe ---
@@ -83,7 +82,7 @@ class UserService {
 
         if (!isPasswordMatch) {
             // Même erreur générique.
-            throw new BusinessLogicError("Numéro de téléphone ou mot de passe incorrect.");
+            throw new AppError("Numéro de téléphone ou mot de passe incorrect.",409);
         }
 
         // --- Étape 4: Générer le JSON Web Token (JWT) ---
@@ -115,7 +114,7 @@ class UserService {
     async getUserById(id_user) {
         const User = await userRepository.findById(id_user);
         if (!User) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
         return User;
     }
@@ -133,12 +132,12 @@ class UserService {
 
         const hasModifiableField = Object.keys(data).some(key => modifiableFields.includes(key));
         if (!hasModifiableField) {
-            throw new BusinessLogicError("Aucune donnée modifiable n'a été fournie.");
+            throw new AppError("Aucune donnée modifiable n'a été fournie.",400);
         }
 
         const userExists = await userRepository.findById(id_user);
         if (!userExists) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
 
         const dataToUpdate = { updated_by: performingUserId };
@@ -151,7 +150,7 @@ class UserService {
         if (data.role) {
             const newRole = await RoleRepository.findByLibelle(data.role);
             if (!newRole) {
-                throw new NotFoundError(`Le rôle '${data.role}' n'a pas été trouvé.`);
+                throw new AppError(`Le rôle '${data.role}' n'a pas été trouvé.`,404);
             }
             dataToUpdate.id_role = newRole.id_role;
         }
@@ -162,7 +161,7 @@ class UserService {
         if (data.telephone) {
             const existingUser = await userRepository.findByTel(data.telephone);
             if (existingUser && existingUser.id_user !== id_user) {
-                throw new BusinessLogicError(`Le numéro de téléphone '${data.telephone}' est déjà utilisé par un autre compte.`);
+                throw new AppError(`Le numéro de téléphone '${data.telephone}' est déjà utilisé par un autre compte.`,400);
             }
             dataToUpdate.telephone = data.telephone;
         }
@@ -178,7 +177,7 @@ class UserService {
     }
 
     /**
-     * recuperer tout les users
+     * récupérer tout les users
      * @returns {Promise<User[]>} tableau de touts les users
      */
     async getAllUsers() {
@@ -193,7 +192,7 @@ class UserService {
     async deleteUser (id_user){
         const User = await userRepository.findById(id_user);
         if (!User) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
 
         await  userRepository.delete(id_user)
@@ -210,13 +209,10 @@ class UserService {
         // Logique métier du service : d'abord, vérifier que l'utilisateur existe !
         const user = await userRepository.findById(id_user);
         if (!user) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
 
-        // Si l'utilisateur existe, on appelle la méthode du repository pour trouver ses véhicules.
-        const voitures = await userRepository.findVehiclesByUserId(id_user);
-
-        return voitures;
+        return  userRepository.findVehiclesByUserId(id_user);
     }
 
     /**
@@ -232,7 +228,7 @@ class UserService {
         // 1. Logique métier du service : valider l'existence du conducteur.
         const user = await userRepository.findById(id_conducteur);
         if (!user) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_conducteur} n'a pas été trouvé.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_conducteur} n'a pas été trouvé.`,404);
         }
         // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "conducteur".
 
@@ -241,9 +237,9 @@ class UserService {
 
         // 3. Appeler la méthode unique du repository en lui passant les paramètres.
         // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
-        const recoltes = await recolteRepository.getByConducteur(id_conducteur, dateDebut, dateFin);
+        return recolteRepository.getByConducteur(id_conducteur, dateDebut, dateFin);
 
-        return recoltes;
+
     }
 
 
@@ -260,18 +256,15 @@ class UserService {
         // 1. Logique métier du service : valider l'existence du producteur.
         const user = await userRepository.findById(id_producteur);
         if (!user) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_producteur} n'a pas été trouvé.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_producteur} n'a pas été trouvé.`,404);
         }
         // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "producteur".
 
         // 2. Extraire les filtres de l'objet.
         const { dateDebut, dateFin } = filtres;
 
-        // 3. Appeler la méthode unique du repository en lui passant les paramètres.
-        // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
-        const recoltes = await recolteRepository.getByProducteur(id_producteur, dateDebut, dateFin);
 
-        return recoltes;
+        return recolteRepository.getByProducteur(id_producteur, dateDebut, dateFin);
     }
 
 
@@ -288,18 +281,16 @@ class UserService {
         // 1. Logique métier du service : valider l'existence du conducteur.
         const user = await userRepository.findById(id_livreur);
         if (!user) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_livreur} n'a pas été trouvé.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_livreur} n'a pas été trouvé.`,404);
         }
         // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "conducteur".
 
         // 2. Extraire les filtres de l'objet.
         const { dateDebut, dateFin } = filtres;
 
-        // 3. Appeler la méthode unique du repository en lui passant les paramètres.
-        // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
-        const livraison = await livraisonRepository.getByLivreurDetailed(id_livreur, dateDebut, dateFin);
 
-        return livraison;
+
+        return livraisonRepository.getByLivreurDetailed(id_livreur, dateDebut, dateFin);
     }
 
 
@@ -316,18 +307,16 @@ class UserService {
         // 1. Logique métier du service : valider l'existence du producteur.
         const user = await userRepository.findById(id_client);
         if (!user) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_client} n'a pas été trouvé.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_client} n'a pas été trouvé.`,404);
         }
         // On pourrait aussi vérifier ici que l'utilisateur a bien le rôle "producteur".
 
         // 2. Extraire les filtres de l'objet.
         const { dateDebut, dateFin } = filtres;
 
-        // 3. Appeler la méthode unique du repository en lui passant les paramètres.
-        // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
-        const livraison = await livraisonRepository.getByClientDetailed(id_client, dateDebut, dateFin);
 
-        return livraison;
+
+        return livraisonRepository.getByClientDetailed(id_client, dateDebut, dateFin);
     }
 
     /**
@@ -338,11 +327,11 @@ class UserService {
     async getFichePaieByUserId(id_user) {
         const user = await userRepository.findById(id_user);
         if (!user) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
-        const fiche = await FichePaieRepository.getByUser(id_user)
 
-        return fiche;
+
+        return FichePaieRepository.getByUser(id_user);
     }
 
     /**
@@ -353,10 +342,10 @@ class UserService {
     async findCircuitsByUser(id_user){
         const user = await userRepository.findById(id_user);
         if (!user) {
-            throw new NotFoundError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`);
+            throw new AppError(`L'utilisateur avec l'ID ${id_user} n'a pas été trouvé.`,404);
         }
-        const circuits = await CircuitUserRepository.findCircuitsByUser(id_user);
-       return circuits ;
+
+       return await CircuitUserRepository.findCircuitsByUser(id_user) ;
     }
 
     /**
@@ -372,7 +361,7 @@ class UserService {
         // Vérifier que le Carburant existe
         const conducteur = await userRepository.findById(id_conducteur);
         if (!conducteur) {
-            throw new NotFoundError(`Le conducteur avec l'ID ${id_conducteur} n'existe pas.`);
+            throw new AppError(`Le conducteur avec l'ID ${id_conducteur} n'existe pas.`,404);
         }
         const { dateDebut, dateFin } = filtres;
 

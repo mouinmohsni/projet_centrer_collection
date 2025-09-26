@@ -1,6 +1,5 @@
 const catchAsync = require('../util/catchAsync')
 const FichePaieService =require('../services/FichePaieService')
-const FichePaie = require('../models/FichePaie')
 
 
 class FichePaieController{
@@ -8,7 +7,7 @@ class FichePaieController{
     /**
      * @desc    Créer une nouvelle FichePaie
      * @route   POST /api/FichePaies
-     * @access  Private (à définir plus tard)
+     * @access  private
      */
     createFichePaie = catchAsync(async (req, res, next) => {
         const performingUserId = req.user.id_user;

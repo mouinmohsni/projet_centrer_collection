@@ -11,7 +11,7 @@ const router = express.Router();
 // POST /api/factures -> Créer un nouveau facture
 router.route('/')
     .get(FactureController.getAllFacture)
-    .post(FactureController.createFacure);
+    .post(FactureController.createFacture);
 
 // GET /api/factures/:id -> Récupérer une voiture par son ID
 // PATCH /api/factures/:id -> Mettre à jour une voiture
