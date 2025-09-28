@@ -1,0 +1,27 @@
+/* AppLayout.module.css */
+
+.appContainer {
+    display: flex; /* Équivalent de la classe 'flex' de Tailwind */
+    height: 100vh; /* vh = viewport height. Équivalent de 'h-screen' */
+    background-color: #f3f4f6; /* Une couleur de fond gris clair */
+}
+
+.iconSidebarWrapper {
+    /* Cet élément ne doit pas rétrécir. Sa largeur sera définie par son contenu. */
+    flex-shrink: 0;
+    background-color: #1f2937; /* Gris foncé */
+}
+
+.sidebarWrapper {
+    /* Cet élément non plus ne doit pas rétrécir. */
+    flex-shrink: 0;
+    background-color: #ffffff; /* Blanc */
+    border-right: 1px solid #e5e7eb; /* Bordure à droite */
+}
+
+.mainContent {
+    /* Cet élément doit grandir pour prendre toute la place restante. */
+    flex-grow: 1; /* Équivalent de 'flex-1' de Tailwind */
+    padding: 24px; /* Un peu d'espace intérieur. Équivalent de 'p-6' */
+    overflow-y: auto; /* Barre de défilement verticale si nécessaire */
+}

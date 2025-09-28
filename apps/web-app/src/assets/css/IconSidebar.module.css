@@ -1,0 +1,40 @@
+.iconSidebarContainer {
+    height: 100%;
+    width: 75px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.iconButton {
+    width: 48px;
+    height: 48px;
+    background-color: #4f4f4f; /* Couleur de fond pour l'icône */
+    border-radius: 50%; /* Pour faire un cercle parfait */
+    cursor: pointer;
+
+    /* Pour centrer un futur caractère ou une image à l'intérieur */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+
+    /* Effet de transition doux */
+    transition: all 0.2s ease-in-out;
+}
+
+.iconButton:hover {
+    border-radius: 16px; /* L'effet "carré arrondi" de Discord au survol */
+    background-color: #3a82f7; /* Une couleur bleue pour le survol/sélection */
+}
+
+.active {
+    border-radius: 16px;
+    background-color: #3a82f7; /* Même style que le survol pour commencer */
+}

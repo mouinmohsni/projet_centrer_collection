@@ -1,0 +1,83 @@
+/* Sidebar.module.css */
+.sidebarContainer {
+    width: 240px; /* Largeur standard pour une sidebar de ce type */
+    height: 100%;
+    padding: 12px;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Espace entre les groupes d'accordéons */
+}
+
+.accordionItem {
+    /* Juste un conteneur */
+}
+
+.accordionTitle {
+    padding: 8px 12px;
+    font-weight: 600;
+    color: #4a5568; /* Gris un peu foncé */
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: flex-start; /* Pour espacer le titre et la future flèche */
+    align-items: center;
+    border: #4a5568;
+    background: none;
+    border: none;
+    width: 100%; /* Un bouton n'est pas en 'block' par défaut */
+    text-align: left
+}
+.accordionTitle:hover {
+    background-color: #edf2f7; /* Gris très clair au survol */
+}
+
+.accordionContent {
+    list-style: none; /* Enlève les puces de la liste */
+    padding-left: 24px; /* Indentation pour les sous-éléments */
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px; /* Espace entre les sous-éléments */
+}
+
+.subItem {
+    padding: 6px 12px;
+    color: #718096; /* Gris plus clair */
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+}
+.subItem:hover {
+    color: #2d3748; /* Texte plus foncé au survol */
+    background-color: #e2e8f0; /* Fond un peu plus visible */
+}
+.chevron{
+    transition: transform 0.2s ease;
+    margin-right: 20px;
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+}
+.chevronOpen{
+    transform: rotate(90deg);
+}
+
+.subItemActive {
+    background-color: #e2e8f0;
+    color: #2d3748;
+    font-weight: 600;
+}
