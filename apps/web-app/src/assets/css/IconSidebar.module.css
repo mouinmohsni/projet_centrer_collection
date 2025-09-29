@@ -38,3 +38,8 @@
     border-radius: 16px;
     background-color: #3a82f7; /* Même style que le survol pour commencer */
 }
+
+.iconSvg {
+    width: 28px; /* ou 32px, à vous de voir */
+    height: 28px;
+}

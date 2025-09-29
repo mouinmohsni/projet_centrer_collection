@@ -1,9 +1,14 @@
-/* AppLayout.module.css */
+.pageWrapper{
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f3f4f6;
 
+}
 .appContainer {
-    display: flex; /* Équivalent de la classe 'flex' de Tailwind */
-    height: 100vh; /* vh = viewport height. Équivalent de 'h-screen' */
-    background-color: #f3f4f6; /* Une couleur de fond gris clair */
+    display: flex; /* Garde son display flex (row par défaut) */
+    flex-grow: 1;  /* PREND TOUT L'ESPACE VERTICAL RESTANT ! */
+    overflow: hidden; /* Empêche les dépassements bizarres */
 }
 
 .iconSidebarWrapper {
@@ -15,13 +20,14 @@
 .sidebarWrapper {
     /* Cet élément non plus ne doit pas rétrécir. */
     flex-shrink: 0;
-    background-color: #ffffff; /* Blanc */
-    border-right: 1px solid #e5e7eb; /* Bordure à droite */
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+
 }
 
-.mainContent {
-    /* Cet élément doit grandir pour prendre toute la place restante. */
-    flex-grow: 1; /* Équivalent de 'flex-1' de Tailwind */
-    padding: 24px; /* Un peu d'espace intérieur. Équivalent de 'p-6' */
-    overflow-y: auto; /* Barre de défilement verticale si nécessaire */
+.pageContent {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background-color: #f3f4f6;
 }

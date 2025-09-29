@@ -1,32 +1,59 @@
-import React ,{useState} from "react";
+import {useState} from "react";
 import styles from "../../assets/css/Sidebar.module.css";
-import ChevronIcon from "../element/ChevronIcon.tsx";
+import ChevronIcon from "../icon/ChevronIcon.tsx";
 
 
-interface Sidebar {
-    activePanel : string ;
-    children?: React.ReactNode;
-}
+
 interface SidebarProps {
     sectionName: string | null; // Il doit accepter un 'string' ou 'null'
+    labelSection :  string | null;
 }
 
 const menuData = {
-    Dashboard: [
-        { title: 'Aperçu', items: ['Statistiques', 'Rapports'] },
-        { title: 'Activité récente', items: ['Ventes', 'Inscriptions'] },
+    // Clé 'dashboard' correspond à l'id: 'dashboard'
+    dashboard: [
+        { title: 'Vue d\'ensemble', items: ['Statistiques clés', 'Alertes récentes'] },
+        { title: 'Rapports', items: ['Rapport journalier', 'Rapport mensuel'] },
     ],
-    Analytics: [
-        { title: 'Trafic', items: ['Visiteurs', 'Sources'] },
-        { title: 'Engagement', items: ['Taux de rebond', 'Temps passé'] },
+    // Clé 'executions' correspond à l'id: 'executions'
+    executions: [
+        { title: 'Tournées Actives', items: ['Carte en direct', 'Statuts des livraisons'] },
+        { title: 'Planification', items: ['Créer une tournée', 'Optimiser les trajets'] },
     ],
-    Settings: [
-        { title: 'Profil', items: ['Mon compte', 'Sécurité'] },
-        { title: 'Facturation', items: ['Abonnement', 'Historique'] },
+    // Clé 'Circuits' correspond à l'id: 'Circuits'
+    Circuits: [
+        { title: 'Gestion des Circuits', items: ['Liste des circuits', 'Ajouter un circuit'] },
+        { title: 'Points d\'arrêt', items: ['Clients', 'Entrepôts'] },
+    ],
+    // Clé 'invoices' correspond à l'id: 'invoices'
+    invoices: [
+        { title: 'Factures Clients', items: ['En attente', 'Payées', 'En retard'] },
+        { title: 'Générer', items: ['Facturation par client', 'Facturation par période'] },
+    ],
+    // Clé 'users' correspond à l'id: 'users'
+    users: [
+        { title: 'Utilisateurs', items: ['Liste des employés', 'Ajouter un utilisateur'] },
+        { title: 'Rôles & Permissions', items: ['Gérer les rôles'] },
+    ],
+    // Clé 'vehicles' correspond à l'id: 'vehicles'
+    vehicles: [
+        { title: 'Flotte', items: ['Liste des véhicules', 'Ajouter un véhicule'] },
+        { title: 'Maintenance', items: ['Planifier une intervention', 'Historique'] },
+    ],
+    // Clé 'catalog' correspond à l'id: 'catalog'
+    catalog: [
+        { title: 'Produits', items: ['Tous les produits', 'Ajouter un produit'] },
+        { title: 'Catégories', items: ['Gérer les catégories'] },
+    ],
+    // Clé 'settings' correspond à l'id: 'settings'
+    settings: [
+        { title: 'Mon Compte', items: ['Profil', 'Changer le mot de passe'] },
+        { title: 'Application', items: ['Notifications', 'Thème'] },
     ],
 };
 
-const Sidebar = ({sectionName}:SidebarProps) => {
+const Sidebar = ({sectionName,labelSection}:SidebarProps) => {
+    console.log("labelSection ic",labelSection)
 
     // Un état pour savoir quel accordéon est ouvert. On stocke son titre.
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -41,7 +68,7 @@ const Sidebar = ({sectionName}:SidebarProps) => {
     };
     return (
         <div className={styles.sidebarContainer}>
-            <h1 className={styles.title}>{sectionName}</h1>
+            <h1 className={styles.title}>{labelSection}</h1>
 
 
 
