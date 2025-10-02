@@ -1,33 +1,118 @@
-.pageWrapper{
+/* =================================================================== */
+/*            STYLES DE BASE (Mobile First, < 640px)                   */
+/* =================================================================== */
+
+/* --- Conteneurs principaux --- */
+.pageWrapper {
     display: flex;
     flex-direction: column;
     height: 100vh;
     background-color: #f3f4f6;
-
 }
+
 .appContainer {
-    display: flex; /* Garde son display flex (row par défaut) */
-    flex-grow: 1;  /* PREND TOUT L'ESPACE VERTICAL RESTANT ! */
-    overflow: hidden; /* Empêche les dépassements bizarres */
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* --- Conteneurs de la navigation (Menu) --- */
+.menuContainer {
+    display: flex;
+    width: 100%;
+    flex-shrink: 0;
 }
 
 .iconSidebarWrapper {
-    /* Cet élément ne doit pas rétrécir. Sa largeur sera définie par son contenu. */
     flex-shrink: 0;
-    background-color: #1f2937; /* Gris foncé */
+    background-color: #1f2937;
 }
 
 .sidebarWrapper {
-    /* Cet élément non plus ne doit pas rétrécir. */
     flex-shrink: 0;
     background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
-
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
 }
 
+/* --- Conteneur du contenu --- */
+/* PAR DÉFAUT, LE CONTENU EST CACHÉ SUR MOBILE */
 .pageContent {
-    flex-grow: 1;
+    display: none;
+}
+
+/* --- Logique d'affichage sur mobile --- */
+/* Quand on clique sur un sous-item, on inverse la visibilité */
+.appContainer.contentVisibleMobile .menuContainer {
+    display: none;
+}
+
+.appContainer.contentVisibleMobile .pageContent {
+    display: block; /* On le réaffiche */
+    width: 100%;
     padding: 24px;
     overflow-y: auto;
-    background-color: #f3f4f6;
+    background-color: royalblue; /* Couleur pour le test mobile */
+}
+
+
+/* =================================================================== */
+/*         BREAKPOINT 1 : PETITES TABLETTES (640px à 767px)            */
+/* =================================================================== */
+
+@media (min-width: 640px) and (max-width: 767px) {
+    /* Ici, on garde la logique mobile (menu OU contenu), mais on centre le menu */
+    .appContainer {
+        justify-content: flex-start; /* Centre le menuContainer */
+    }
+
+
+    .menuContainer {
+        /*width: auto; !* Le menu ne prend plus 100% de la largeur *!*/
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        /* j'ai supprimer le reste  et me convient comme ca */
+
+    }
+}
+
+
+/* =================================================================== */
+/*         BREAKPOINT 2 : TABLETTE & DESKTOP (>= 768px)                */
+/* =================================================================== */
+
+@media (min-width: 768px) {
+    /* --- On annule les styles du breakpoint précédent --- */
+    .appContainer {
+        justify-content: flex-start; /* On annule le centrage */
+    }
+
+    .menuContainer {
+        margin-top: 0;
+        height: auto;
+        border-radius: 0;
+        box-shadow: none;
+        width: auto;
+    }
+
+    /* --- On force l'affichage permanent du menu ET du contenu --- */
+    .menuContainer,
+    .appContainer.contentVisibleMobile .menuContainer {
+        display: flex; /* Le menu est TOUJOURS visible */
+    }
+
+    .pageContent,
+    .appContainer.contentVisibleMobile .pageContent {
+        display: block; /* Le contenu est TOUJOURS visible */
+        flex-grow: 1;
+        width: auto; /* La largeur est gérée par flexbox */
+        padding: 24px;
+        overflow-y: auto;
+        background-color: rebeccapurple; /* Couleur pour le test desktop */
+    }
+
+    .sidebarWrapper {
+        border-right: 1px solid #e5e7eb;
+    }
 }
