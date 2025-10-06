@@ -1,16 +1,17 @@
 import  { useState } from 'react';
-import styles from './assets/css/AppLayout.module.css'; // Assurez-vous que le chemin est correct
-import TopBar from './components/navigation/TopBar'; // Assurez-vous que le chemin est correct
-import IconSidebar from './components/navigation/IconSidebar'; // Assurez-vous que le chemin est correct
-import Sidebar from './components/navigation/Sidebar'; // Assurez-vous que le chemin est correct
-import ContentData from './components/navigation/ContentData'; // Assurez-vous que le chemin est correct
+import styles from './assets/css/AppLayout.module.css';
+import TopBar from './components/navigation/TopBar';
+import IconSidebar from './components/navigation/IconSidebar';
+import Sidebar from './components/navigation/Sidebar';
+import { Outlet } from 'react-router-dom';
 
 const AppLayout = () => {
     // --- ÉTATS ---
     const [isSidebarOpen, setSidebarOpen] = useState(true); // 'true' est mieux pour le dev
     const [activeSection, setActiveSection] = useState<string | null>('dashboard'); // Mieux de commencer avec un id
     const [labelSection, setLabelSection] = useState<string | null>('Tableau de Bord');
-    const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
+    const [activeSubItem, setActiveSubItem] = useState<string | null>(null)
+
 
     // --- GESTIONNAIRES D'ÉVÉNEMENTS ---
     const handleIconClick = (sectionName: string, label: string) => {
@@ -64,8 +65,8 @@ const AppLayout = () => {
 
                 {/* --- CONTENEUR DU CONTENU (caché par défaut sur mobile) --- */}
                 <main className={styles.pageContent}>
-                    <span>  mouin </span>
-                    <ContentData activeSubItem={activeSubItem} />
+                    <Outlet />
+
                 </main>
 
             </div>

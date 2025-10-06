@@ -1,6 +1,7 @@
 import {useState} from "react";
 import styles from "../../assets/css/Sidebar.module.css";
 import ChevronIcon from "../icon/ChevronIcon.tsx";
+import { useNavigate } from 'react-router-dom';
 
 
 interface SidebarProps {
@@ -13,55 +14,55 @@ interface SidebarProps {
 const menuData = {
     // Clé 'dashboard' correspond à l'id: 'dashboard'
     dashboard: [
-        {title: 'Vue d\'ensemble', items: ['Statistiques clés', 'Alertes récentes']},
-        {title: 'Rapports', items: ['Rapport journalier', 'Rapport mensuel']},
+        {title: 'Vue d\'ensemble', items: [{label:'Statistiques clés',path: '/' }, {label:'Alertes récentes',path: '/dashboard/alert' }]},
+        {title: 'Rapports', items: [{label :'Rapport journalier',path: '/dashboard/jours' }, {label :'Rapport mensuel',path: '/dashboard/rapport/mois' }]},
     ],
     // Clé 'executions' correspond à l'id: 'executions'
     executions: [
-        {title: 'Tournées Actives', items: ['Carte en direct', 'Statuts des livraisons']},
-        {title: 'Planification', items: ['Créer une tournée', 'Optimiser les trajets']},
+        {title: 'Tournées Actives', items: [{label :'Carte en direct',path: '/tournees/live' }, {label :'Statuts des livraisons',path: '/tournees' }]},
+        {title: 'Planification', items: [{label :'Créer une tournée',path: '/tournees/ajouter' },{label : 'modifier les trajets',path: '/tournees/update' }]},
     ],
     // Clé 'Circuits' correspond à l'id: 'Circuits'
     Circuits: [
         {
             title: 'Gestion des Circuits',
-            items: ['Liste des circuits', 'Ajouter un circuit', 'Modifier un circuit', 'Supprimer un circuit']
+            items: [{label :'Liste des circuits',path: '/circuits' }, {label :'Ajouter un circuit', path: '/circuit/ajouter' }, {label :'Modifier un circuit', path: '/circuit/modifier' }, {label :'Supprimer un circuit', path: '/circuit/supprimer' }]
         },
-        {title: 'Points d\'arrêt', items: ['Clients', 'Entrepôts']},
+
     ],
     // Clé 'invoices' correspond à l'id: 'invoices'
     invoices: [
-        {title: 'Factures Clients', items: ['En attente', 'Payées', 'En retard']},
-        {title: 'Générer', items: ['Facturation par client', 'Facturation par période']},
+        {title: 'Factures Clients', items: [{label :'En attente', path: '/facture/attente' }, {label :'Payées', path: '/factures/payees' }, {label :'En retard', path: '/facture/retard' }]},
+        {title: 'Générer', items: [{label:'Facturation par client', path: '/facture/client' }, {label :'Facturation par période', path: '/facture/periode' }]},
         {
             title: 'Gestion des facture',
-            items: ['Ajouter une Facturation', 'Modifier une Facturation', 'Supprimer une Facturation']
+            items: [{label :'Ajouter une Facturation', path: '/facture/add' }, {label :'Modifier une Facturation', path: '/facture/update' }, {label :'Supprimer une Facturation', path: 'facture/delete' }]
         },
     ],
     // Clé 'users' correspond à l'id: 'users'
     users: [
-        {title: 'Utilisateurs', items: ['Liste des employés', 'Ajouter un utilisateur']},
-        {title: 'Rôles & Permissions', items: ['Gérer les rôles']},
+        {title: 'Utilisateurs', items: [{label :'Liste des employés', path: '/users' }, {label :'Ajouter un utilisateur', path: '/addUsers' }]},
+        {title: 'Rôles & Permissions', items: [{label :'Gérer les rôles', path: '/roles' }]},
     ],
     // Clé 'vehicles' correspond à l'id: 'vehicles'
     vehicles: [
-        {title: 'Flotte', items: ['Liste des véhicules', 'Ajouter un véhicule']},
-        {title: 'Maintenance', items: ['Planifier une intervention', 'Historique']},
+        {title: 'Flotte', items: [{label :'Liste des véhicules', path: '/voitures' }, {label :'Ajouter un véhicule', path: '/voiture/ajouter' }]},
+        {title: 'Maintenance', items: [{label :'Planifier une intervention', path: '/voiture/planification' }, {label :'Historique', path: '/voiture/suivie' }]},
     ],
     // Clé 'catalog' correspond à l'id: 'catalog'
     catalog: [
-        {title: 'Produits', items: ['Tous les produits', 'Ajouter un produit']},
-        {title: 'Catégories', items: ['Gérer les catégories']},
+        {title: 'Produits', items: [{label :'Tous les produits', path: '/produits' }, {label :'Ajouter un produit', path: '/produis/add' }]},
+        {title: 'Catégories', items: [{label :'Gérer les catégories', path: '/categories' }]},
     ],
     // Clé 'settings' correspond à l'id: 'settings'
     settings: [
-        {title: 'Mon Compte', items: ['Profil', 'Changer le mot de passe']},
-        {title: 'Application', items: ['Notifications', 'Thème']},
+        {title: 'Mon Compte', items: [{label :'Profil', path: '/profile' }, {label :'Changer le mot de passe', path: '/password' }]},
+        {title: 'Application', items: [{label :'Notifications', path: '/notification' }, {label :'Thème', path: '/theme' }]},
     ],
 };
 
 const Sidebar = ({ sectionName, labelSection, onSubItemClick, activeSubItem }: SidebarProps) => {
-
+    const navigate = useNavigate();
 
     // Un état pour savoir quel accordéon est ouvert. On stocke son titre.
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -72,6 +73,11 @@ const Sidebar = ({ sectionName, labelSection, onSubItemClick, activeSubItem }: S
     const handleAccordionClick = (title: string) => {
         // Si on clique sur l'accordéon déjà ouvert, on le ferme. Sinon, on ouvre le nouveau.
         setOpenAccordion(openAccordion === title ? null : title);
+    };
+
+    const handleSubItemClick = (path: string) => {
+        navigate(path);
+        onSubItemClick(path);
     };
     return (
         <div className={styles.sidebarContainer}>
@@ -97,13 +103,14 @@ const Sidebar = ({ sectionName, labelSection, onSubItemClick, activeSubItem }: S
                             <ul id={menu.title + "-content"} className={styles.accordionContent}>
                                 {menu.items.map((item) => (
                                     <li
-                                        key={item}
+                                        key={item.path}
                                         // 3. Utiliser la prop 'activeSubItem' pour la classe
-                                        className={`${styles.subItem} ${activeSubItem === item ? styles.subItemActive : ''}`}
+                                        className={`${styles.subItem} ${activeSubItem === item.path ? styles.subItemActive : ''}`}
                                         // 4. Appeler la fonction du parent au clic
-                                        onClick={() => onSubItemClick(item)}
+
+                                            onClick={() => handleSubItemClick(item.path)}
                                     >
-                                        {item}
+                                        {item.label}
                                     </li>
                                 ))}
                             </ul>
