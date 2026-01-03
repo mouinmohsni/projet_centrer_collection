@@ -11,10 +11,10 @@ const { protect } = require('./ middleware/authMiddleware');
 const circuitRoutes = require('./routes/circuit.routes')
 const voitureRoutes = require('./routes/voiture.routes');
 const roleRoutes = require('./routes/role.routes');
-const recolteRoute = require('./routes/Recolte.routes');
+const operationRoute = require('./routes/operation.routes');
 const produitRoute =require('./routes/produit.routes');
-const livraisonRoute = require('./routes/livraison.routes');
-const fichePaieId = require('./routes/FichePaieId.routes');
+const livraisonRoute = require('./delete/livraison.routes');
+const fichePaieId = require('./routes/fichePaieId.routes');
 const carburant = require('./routes/carburant.routes');
 const circuitExecution = require('./routes/circuitExecution.routes');
 const facture =  require('./routes/facture.routes');
@@ -66,10 +66,8 @@ app.use(protect);
 // Montage des routes pour les circuits
 app.use('/api/circuits', circuitRoutes);
 app.use('/api/voitures',voitureRoutes);
-app.use('/api/roles',roleRoutes);
-app.use('/api/recoltes',recolteRoute);
+app.use('/api/operation',operationRoute);
 app.use('/api/produits',produitRoute);
-app.use('/api/livraisons',livraisonRoute);
 app.use('/api/fichePaies',fichePaieId);
 app.use('/api/carburants',carburant);
 app.use('/api/circuitExecutions',circuitExecution);

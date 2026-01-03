@@ -1,6 +1,6 @@
 
 const express = require('express');
-const RecolteController = require('../controllers/Recolte.controller');
+const RecolteController = require('./Recolte.controller');
 // Plus tard, nous ajouterons le middleware de protection ici
 // const protect = require('../middleware/auth.middleware');
 

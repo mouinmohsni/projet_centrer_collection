@@ -1,4 +1,4 @@
-const RecolteRepository = require('../repositories/RecolteRepository')
+const RecolteRepository = require('./RecolteRepository')
 const AppError = require('../util/AppError')
 
 

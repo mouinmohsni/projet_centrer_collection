@@ -1,7 +1,7 @@
 const db = require('../models/db');
 
 const FactureLigne = require('../models/FactureLigne');
-const BaseRepository = require("./BaseRepository");
+const BaseRepository = require("../delete/BaseRepository");
 
 class FactureLigneRepository  extends BaseRepository{
 

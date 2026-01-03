@@ -1,5 +1,5 @@
 const catchAsync = require('../util/catchAsync')
-const LivraisonService =require('../services/LivraisonService')
+const LivraisonService =require('./LivraisonService')
 
 
 class LivraisonController{

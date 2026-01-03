@@ -1,5 +1,5 @@
 const catchAsync = require('../util/catchAsync')
-const RecolteService =require('../services/RecolteService')
+const RecolteService =require('./RecolteService')
 
 
 class RecolteController{

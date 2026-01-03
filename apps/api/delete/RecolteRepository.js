@@ -1,6 +1,6 @@
 const db = require('../models/db');
 
-const Recolte = require('../models/Recolte');
+const Recolte = require('./Recolte');
 
 class RecolteRepository {
 

@@ -1,4 +1,4 @@
-const LivraisonRepository = require('../repositories/LivraisonRepository')
+const LivraisonRepository = require('./LivraisonRepository')
 const AppError = require('../util/AppError')
 
 

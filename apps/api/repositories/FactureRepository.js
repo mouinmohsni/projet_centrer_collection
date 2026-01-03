@@ -1,6 +1,6 @@
 const db = require('../models/db');
 const Facture = require("../models/Facture");
-const BaseRepository = require("./BaseRepository");
+const BaseRepository = require("../delete/BaseRepository");
 class FactureRepository  extends BaseRepository{
 
     constructor() {

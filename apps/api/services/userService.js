@@ -1,8 +1,8 @@
 const userRepository = require('../repositories/UserRepository');
 const AppError = require('../util/AppError');
 
-const recolteRepository = require('../repositories/RecolteRepository')
-const livraisonRepository = require('../repositories/LivraisonRepository')
+const recolteRepository = require('../delete/RecolteRepository')
+const livraisonRepository = require('../delete/LivraisonRepository')
 const FichePaieRepository = require("../repositories/FichePaieRepository");
 const CircuitUserRepository = require('../repositories/CircuitUserRepository');
 const CarburantRepository = require("../repositories/CarburantRepository");

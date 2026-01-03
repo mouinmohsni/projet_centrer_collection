@@ -2,7 +2,7 @@ const db = require('../models/db');
 
 // file: src/repositories/livraison.repository.js
 
-const Livraison = require('../models/Livraison');
+const Livraison = require('./Livraison');
 
 class LivraisonRepository {
 
@@ -68,82 +68,6 @@ class LivraisonRepository {
         );
         return rows[0];
     }
-
-    //
-    // /**
-    //  * Récupère les livraisons d'un a un client, avec un filtre optionnel par période de dates.
-    //  * @param {number} id_client - L'ID du client.
-    //  * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
-    //  * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
-    //  * @returns {Promise<object[]>} Un tableau des récoltes correspondantes.
-    //  */
-    // async getByClient(id_client, dateDebut, dateFin) {
-    //     // 1. On commence avec la requête de base et les paramètres de base.
-    //     let sql = `
-    //         SELECT l.*,d.*
-    //         FROM livraison AS l
-    //         JOIN dim_date AS d ON l.id_date = d.id_date
-    //         WHERE l.id_client = ?
-    //     `;
-    //     const params = [id_client];
-    //
-    //     // 2. On ajoute dynamiquement les conditions de date si elles sont fournies.
-    //     if (dateDebut) {
-    //         sql += ` AND d.jour >= ?`; // On filtre sur la date complète
-    //         params.push(dateDebut);
-    //     }
-    //
-    //     if (dateFin) {
-    //         sql += ` AND d.jour <= ?`;
-    //         params.push(dateFin);
-    //     }
-    //
-    //     // 3. On ajoute le tri à la fin.
-    //     sql += ` ORDER BY d.jour DESC`;
-    //
-    //     // 4. On exécute la requête construite dynamiquement.
-    //     const [rows] = await db.execute(sql, params);
-    //
-    //     return rows.map(this.mapRowToModel);
-    // }
-    //
-    //
-    // /**
-    //  * Récupère les livraisons d'un conducteur, avec un filtre optionnel par période de dates.
-    //  * @param {number} id_livreur - L'ID du conducteur.
-    //  * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
-    //  * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
-    //  * @returns {Promise<object[]>} Un tableau des récoltes correspondantes.
-    //  */
-    // async getBylivreur(id_livreur, dateDebut, dateFin) {
-    //     // 1. On commence avec la requête de base et les paramètres de base.
-    //     let sql = `
-    //         SELECT l.*,d.*
-    //         FROM livraison AS l
-    //         JOIN dim_date AS d ON l.id_date = d.id_date
-    //         WHERE l.id_livreur = ?
-    //     `;
-    //     const params = [id_livreur];
-    //
-    //     // 2. On ajoute dynamiquement les conditions de date si elles sont fournies.
-    //     if (dateDebut) {
-    //         sql += ` AND d.jour >= ?`; // On filtre sur la date complète
-    //         params.push(dateDebut);
-    //     }
-    //
-    //     if (dateFin) {
-    //         sql += ` AND d.jour <= ?`;
-    //         params.push(dateFin);
-    //     }
-    //
-    //     // 3. On ajoute le tri à la fin.
-    //     sql += ` ORDER BY d.jour DESC`;
-    //
-    //     // 4. On exécute la requête construite dynamiquement.
-    //     const [rows] = await db.execute(sql, params);
-    //
-    //     return rows;
-    // }
 
     /**
      * 🔄 Met à jour une livraison.

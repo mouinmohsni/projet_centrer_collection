@@ -1,6 +1,6 @@
 const db = require('../models/db');
 const CircuitExecution = require('../models/CircuitExecution');
-const BaseRepository = require('./BaseRepository');
+const BaseRepository = require('../delete/BaseRepository');
 
 
 
