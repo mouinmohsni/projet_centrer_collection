@@ -234,6 +234,60 @@ class OperationRepository {
     async getByUtilisateurEffectuantDetailed(id_utilisateur_effectuant, dateDebut, dateFin) {
         return this._findDetailed({ 'o.id_utilisateur_effectuant': id_utilisateur_effectuant }, dateDebut, dateFin);
     }
+    /**
+     * Récupère les opérations détaillées pour un rôle spécifique (producteur/conducteur/client/livreur),
+     * avec un filtre optionnel par période de dates.
+     * @param {string} roleType - Le type de rôle à filtrer ('concerne' ou 'effectuant').
+     * @param {number} id_user - L'ID de l'utilisateur.
+     * @param {string} [dateDebut] - La date de début (format 'YYYY-MM-DD'). Optionnelle.
+     * @param {string} [dateFin] - La date de fin (format 'YYYY-MM-DD'). Optionnelle.
+     * @returns {Promise<object[]>} Un tableau des opérations correspondantes.
+     */
+    async getByRoleAndDateRange(roleType, id_user, dateDebut, dateFin) {
+        let userIdColumn;
+
+        // Déterminer la colonne à utiliser en fonction du rôle
+        if (roleType === 'client') {
+            userIdColumn = 'o.id_client';
+        } else if (roleType === 'client') {
+            userIdColumn = 'o.id_utilisateur_effectuant';
+        } else {
+            throw new Error("Le type de rôle doit être 'concerne' ou 'effectuant'.");
+        }
+
+        // 1. On commence avec la requête de base et les paramètres de base.
+        let sql = `
+            SELECT
+                o.id_operation, o.type, o.quantite,
+                o.id_utilisateur_concerne, o.id_utilisateur_effectuant,
+                p.nom AS produitNom,
+                d.jour, d.mois, d.annee, d.jour_semaine
+            FROM operation AS o
+            JOIN dim_date AS d ON o.id_date = d.id_date
+            JOIN produit AS p ON o.id_produit = p.id_produit
+            WHERE ${userIdColumn} = ?
+        `;
+        const params = [id_user];
+
+        // 2. On ajoute dynamiquement les conditions de date si elles sont fournies.
+        if (dateDebut) {
+            sql += ` AND d.jour >= ?`; // On filtre sur la date complète
+            params.push(dateDebut);
+        }
+
+        if (dateFin) {
+            sql += ` AND d.jour <= ?`;
+            params.push(dateFin);
+        }
+
+        // 3. On ajoute le tri à la fin.
+        sql += ` ORDER BY d.jour DESC`;
+
+        // 4. On exécute la requête construite dynamiquement.
+        const [rows] = await db.query(sql, params);
+
+        return rows;
+    }
 }
 
 module.exports = new OperationRepository();

@@ -1,7 +1,7 @@
 const userRepository = require('../repositories/UserRepository');
 const AppError = require('../util/AppError');
 
-const recolteRepository = require('../delete/RecolteRepository')
+const operationRepository = require('../repositories/OperationRepository')
 const livraisonRepository = require('../delete/LivraisonRepository')
 const FichePaieRepository = require("../repositories/FichePaieRepository");
 const CircuitUserRepository = require('../repositories/CircuitUserRepository');
@@ -237,7 +237,7 @@ class UserService {
 
         // 3. Appeler la méthode unique du repository en lui passant les paramètres.
         // Si dateDebut ou dateFin sont undefined, le repository saura quoi faire.
-        return recolteRepository.getByConducteur(id_conducteur, dateDebut, dateFin);
+        return operationRepository.getByRoleAndDateRange("conducteur",id_conducteur, dateDebut, dateFin);
 
 
     }
@@ -264,7 +264,7 @@ class UserService {
         const { dateDebut, dateFin } = filtres;
 
 
-        return recolteRepository.getByProducteur(id_producteur, dateDebut, dateFin);
+        return operationRepository.getByProducteur(id_producteur, dateDebut, dateFin);
     }
 
 
